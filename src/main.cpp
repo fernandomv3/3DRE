@@ -5,13 +5,34 @@
 #include "Geometry.h"
 #include "Material.h"
 #include "Mesh.h"
+#include "GLContext.h"
+
+const int SCREEN_WIDTH = 1280;
+const int SCREEN_HEIGHT = 720;
+
+SDL_Window* window = NULL;
+SDL_GLContext context = NULL;
+
+bool handleEvents(){
+  SDL_Event event;
+  while(SDL_PollEvent(&event)){
+    switch(event.type){
+      case SDL_QUIT:
+        return true;
+    }
+  }
+  return false;
+}
 
 int render(Scene& scene, Camera& camera){
-	std::cout << "Rendering " << scene.getObjects().size() << " objects" << std::endl;
+  std::cout << "Rendering " << scene.getObjects().size() << " objects" << std::endl;
   return 0;
 }
 
 int main(int argc, char** argv){
+
+  initializeContext(context,window,SCREEN_WIDTH,SCREEN_HEIGHT);
+
   Camera cam;
   Scene scene;
   
@@ -24,6 +45,15 @@ int main(int argc, char** argv){
 
   scene.add(obj);
 
-  render(scene,cam);
+  bool quit = false;
+  while(!quit){
+    glClearColor(1.0,1.0,1.0,1.0);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    quit = handleEvents();
+    render(scene,cam);
+    SDL_GL_SwapWindow(window);
+    SDL_Delay( 2000 );
+  }
+
   return 0;
 }
