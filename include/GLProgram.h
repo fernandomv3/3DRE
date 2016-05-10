@@ -35,6 +35,7 @@ public:
   std::vector<Shader>& getShaders();
   int makeProgram();
   GLProgram& addUniform(std::string name, std::string type);
+  std::unordered_map<std::string,int>& getAttrLoc();
 };
 
 #endif

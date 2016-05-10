@@ -5,6 +5,7 @@
 #include "Scene.h"
 #include "Camera.h"
 #include "Geometry.h"
+#include "GLProgram.h"
 
 #include <unordered_map>
 #include <string>
@@ -23,11 +24,14 @@ typedef struct vao Vao;
 
 class Renderer{
 private:
-  std::unordered_map< std::string,Vao> vao;
+  std::unordered_map<std::string,Vao> vao;
+  std::unordered_map<std::string,GLProgram> programs;
 public:
   Renderer(){};
   Renderer& render(const Scene& scene,const Camera& camera);
   Vao& initGeometryBuffers(const Geometry& geom);
+  GLProgram& initProgram(const Material& mat);
+  Renderer& setUpVertexAttributes(GLProgram& prog, const Vao& vao);
 };
 
 uint makeBuffer(GLenum target, const void* data, int size, GLenum usage = GL_STATIC_DRAW);

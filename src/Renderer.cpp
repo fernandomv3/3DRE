@@ -46,6 +46,34 @@ Vao& Renderer::initGeometryBuffers(const Geometry& geom){
   return bufferObj;
 }
 
+GLProgram& Renderer::initProgram(const Material& mat){
+  auto &program = this->programs[mat.getUUID()];
+  if(program.getProgram() == 0){
+    for(auto s : mat.getShaders()){
+      program.addShader(s.first,s.second);
+    }
+    program.makeProgram();
+  }
+  auto &attrLoc = program.getAttrLoc();
+  attrLoc["vPosition"] = glGetAttribLocation(program.getProgram(),"vPosition");
+  return program;
+}
+
+Renderer& Renderer::setUpVertexAttributes(GLProgram& prog, const Vao& vao){
+  glBindBuffer(GL_ARRAY_BUFFER,vao.vertex);
+  int loc = prog.getAttrLoc()["vPosition"];
+  glVertexAttribPointer(
+    loc,
+    3,
+    GL_FLOAT,
+    GL_FALSE,
+    0,
+    (void*)0
+  );
+  glEnableVertexAttribArray(loc);
+  return *this;
+}
+
 Renderer& Renderer::render(const Scene& scene, const Camera& cam){
   //Mat4 world = cam.getWorldMatrix();
   //Mat4 projection = cam.getProjectionMatrix();
@@ -56,8 +84,13 @@ Renderer& Renderer::render(const Scene& scene, const Camera& cam){
     auto mat = mesh->getMaterial();
 
     auto bufferObj =  initGeometryBuffers(*geom);
+    auto program = initProgram(*mat);
+
     glBindVertexArray(bufferObj.vao);
-    //setUpVertexAttributes();
+
+    setUpVertexAttributes(program,bufferObj);
+
+    glBindVertexArray(0);
   }
 
   return *this;

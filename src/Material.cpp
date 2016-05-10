@@ -36,6 +36,8 @@ Material& Material::setSpecularMap(const std::shared_ptr<Texture> specularMap){
   return *this;
 }
 
+std::string Material::getUUID()const{ return uuid; }
+
 Vec4 Material::getDiffuseColor()const { return diffuseColor; }
 Vec4 Material::getSpecularColor()const { return specularColor; }
 float Material::getShininess()const { return shininess; }
@@ -43,7 +45,7 @@ std::shared_ptr<Texture> Material::getColorMap()const { return colorMap; }
 std::shared_ptr<Texture> Material::getNormalMap()const { return normalMap; }
 std::shared_ptr<Texture> Material::getSpecularMap()const { return specularMap; }
 
-std::vector< std::pair <std::string,std::string> > Material::getShaders(){
+std::vector< std::pair <std::string,std::string> > Material::getShaders() const{
   std::vector< std::pair <std::string,std::string> > vec;
   std::string v = 
   "#version 330"

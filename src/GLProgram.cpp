@@ -75,6 +75,8 @@ std::vector<Shader>& GLProgram::getShaders(){
   return this->shaders;
 }
 
+std::unordered_map<std::string,int>& GLProgram::getAttrLoc(){ return attrLoc; }
+
 int GLProgram::makeProgram(){
   int programOk;
   int programValid;
