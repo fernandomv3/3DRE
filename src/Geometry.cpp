@@ -39,6 +39,18 @@ Geometry& Geometry::setBitangents(std::vector<float> bitangents){
   return *this;
 }
 
+std::vector< std::tuple<std::string,void*,int,std::type_index> > Geometry::getAttributes() const{
+  std::vector< std::tuple<std::string,void*,int,std::type_index> > vec;
+  
+  vec.push_back(std::make_tuple("index",(void*)elements.data(),elements.size(),std::type_index(typeid(ushort))));
+
+  vec.push_back(std::make_tuple("position",(void*)vertices.data(),vertices.size(),std::type_index(typeid(float))));
+  vec.push_back(std::make_tuple("normal",(void*)normals.data(),normals.size(),std::type_index(typeid(float))));
+  vec.push_back(std::make_tuple("uv",(void*)texCoords.data(),texCoords.size(),std::type_index(typeid(float))));
+  vec.push_back(std::make_tuple("tangent",(void*)tangents.data(),tangents.size(),std::type_index(typeid(float))));
+  return vec;
+}
+
 Geometry loadDataFromFile(std::string filename){ return Geometry(); }
 
 Geometry quadGeometry(int size){
