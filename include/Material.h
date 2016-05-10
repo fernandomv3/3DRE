@@ -5,6 +5,8 @@
 #include "Texture.h"
 #include <memory>
 #include <string>
+#include <vector>
+#include <utility>
 
 class Material{
 private:
@@ -15,6 +17,7 @@ private:
   std::shared_ptr<Texture> colorMap;
   std::shared_ptr<Texture> normalMap;
   std::shared_ptr<Texture> specularMap;
+  virtual std::vector< std::pair<std::string,std::string> > getShaders();
 public:
   Material(const Vec4& diffuse = Vec4(), const Vec4& specular = Vec4(), float shininess = 0.0);
 

@@ -42,3 +42,28 @@ float Material::getShininess()const { return shininess; }
 std::shared_ptr<Texture> Material::getColorMap()const { return colorMap; }
 std::shared_ptr<Texture> Material::getNormalMap()const { return normalMap; }
 std::shared_ptr<Texture> Material::getSpecularMap()const { return specularMap; }
+
+std::vector< std::pair <std::string,std::string> > Material::getShaders(){
+  std::vector< std::pair <std::string,std::string> > vec;
+  std::string v = 
+  "#version 330"
+  ""
+  "layout(location = 0) in vec4 vPosition;"
+  ""
+  "void main(){"
+  "  gl_Position = vPosition;"
+  "}";
+  vec.push_back(std::make_pair("vertex",v));
+
+  std::string f =
+  "#version 330"
+  ""
+  "layout(location = 0) out vec4 color;"
+  ""
+  "void main(){"
+  "  color = vec4(1.0,0.0,0.0,0.0);"
+  "}";
+  vec.push_back(std::make_pair("fragment",f));
+
+  return vec;
+}
