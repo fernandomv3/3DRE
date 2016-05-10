@@ -48,7 +48,7 @@ std::shared_ptr<Texture> Material::getSpecularMap()const { return specularMap; }
 std::vector< std::pair <std::string,std::string> > Material::getShaders() const{
   std::vector< std::pair <std::string,std::string> > vec;
   std::string v = 
-  "#version 330"
+  "#version 330\n"
   ""
   "layout(location = 0) in vec4 vPosition;"
   ""
@@ -58,7 +58,7 @@ std::vector< std::pair <std::string,std::string> > Material::getShaders() const{
   vec.push_back(std::make_pair("vertex",v));
 
   std::string f =
-  "#version 330"
+  "#version 330\n"
   ""
   "layout(location = 0) out vec4 color;"
   ""

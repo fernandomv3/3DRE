@@ -90,6 +90,13 @@ Renderer& Renderer::render(const Scene& scene, const Camera& cam){
 
     setUpVertexAttributes(program,bufferObj);
 
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,bufferObj.index);
+    glDrawElements(
+      GL_TRIANGLES,
+      geom->getElements().size(),
+      GL_UNSIGNED_SHORT,
+      (void*)0
+    );
     glBindVertexArray(0);
   }
 
