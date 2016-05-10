@@ -6,6 +6,7 @@
 #include "Material.h"
 #include "Mesh.h"
 #include "GLContext.h"
+#include "Renderer.h"
 
 const int SCREEN_WIDTH = 1280;
 const int SCREEN_HEIGHT = 720;
@@ -24,17 +25,13 @@ bool handleEvents(){
   return false;
 }
 
-int render(Scene& scene, Camera& camera){
-  std::cout << "Rendering " << scene.getObjects().size() << " objects" << std::endl;
-  return 0;
-}
-
 int main(int argc, char** argv){
 
   initializeContext(context,window,SCREEN_WIDTH,SCREEN_HEIGHT);
 
   Camera cam;
   Scene scene;
+  Renderer renderer;
   
   cam.perspectiveCamera(60,4.0/3.0,0.001,100.0);
   cam.getPosition()[2] = 10.0;
@@ -50,7 +47,7 @@ int main(int argc, char** argv){
     glClearColor(1.0,1.0,1.0,1.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     quit = handleEvents();
-    render(scene,cam);
+    renderer.render(scene,cam);
     SDL_GL_SwapWindow(window);
     SDL_Delay( 2000 );
   }
