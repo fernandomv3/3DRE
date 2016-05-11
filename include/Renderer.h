@@ -4,7 +4,6 @@
 
 #include "Scene.h"
 #include "Camera.h"
-#include "Geometry.h"
 #include "GLProgram.h"
 
 #include <unordered_map>

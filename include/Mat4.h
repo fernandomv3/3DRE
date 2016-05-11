@@ -2,8 +2,8 @@
 #define MAT4_H
 
 #include <array>
-#include "Vec4.h"
 
+class Vec4;
 class Quaternion;
 class Mat4{
 private:

@@ -1,4 +1,5 @@
 #include "Renderer.h"
+#include <iostream>
 
 Vao& Renderer::initGeometryBuffers(const Geometry& geom){
   auto &bufferObj = this->vao[geom.getUUID()];
@@ -77,7 +78,6 @@ Renderer& Renderer::setUpVertexAttributes(GLProgram& prog, const Vao& vao){
 Renderer& Renderer::render(const Scene& scene, const Camera& cam){
   //Mat4 world = cam.getWorldMatrix();
   //Mat4 projection = cam.getProjectionMatrix();
-
   for(auto obj : scene.getObjects()){
     auto mesh = std::static_pointer_cast<Mesh>(obj);
     auto geom = mesh->getGeometry();
@@ -86,16 +86,18 @@ Renderer& Renderer::render(const Scene& scene, const Camera& cam){
     auto bufferObj =  initGeometryBuffers(*geom);
     auto program = initProgram(*mat);
 
+    glUseProgram(program.getProgram());
+
     glBindVertexArray(bufferObj.vao);
 
     setUpVertexAttributes(program,bufferObj);
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,bufferObj.index);
-    glDrawElements(
+    glBindBuffer(GL_ARRAY_BUFFER,bufferObj.vertex);
+    int numVertices = geom->getVertices().size() / 3;
+    glDrawArrays(
       GL_TRIANGLES,
-      geom->getElements().size(),
-      GL_UNSIGNED_SHORT,
-      (void*)0
+      0,
+      numVertices
     );
     glBindVertexArray(0);
   }

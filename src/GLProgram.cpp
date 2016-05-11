@@ -3,6 +3,9 @@
 #include <GL/glew.h>
 
 #include <iostream>
+#include <string>
+#include <fstream>
+#include <streambuf>
 #include <memory>
 
 GLProgram::GLProgram(){
@@ -23,7 +26,9 @@ GLProgram& GLProgram::addShader(std::string type, std::string src){
 }
 
 std::string GLProgram::getSourceFromFile(std::string filename){
-  return std::string("");
+  std::ifstream t("file.txt");
+  return std::string((std::istreambuf_iterator<char>(t)),
+                   std::istreambuf_iterator<char>());
 }
 
 int GLProgram::compileShader(Shader& shader){

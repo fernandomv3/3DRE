@@ -1,7 +1,6 @@
 #ifndef LIGHT_H
 #define LIGHT_H
 #include "Mesh.h"
-#include "Vec4.h"
 
 class Light : public Mesh {
 private:

@@ -1,7 +1,7 @@
 #ifndef QUATERNION_H
 #define QUATERNION_H
 #include <array>
-#include "Vec4.h"
+class Vec4;
 class Euler;
 class Quaternion{
 private:

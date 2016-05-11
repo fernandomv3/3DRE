@@ -2,7 +2,6 @@
 #define SCENE_H
 
 #include "Light.h"
-#include "Object3D.h"
 #include <memory>
 #include <vector>
 #include <string>

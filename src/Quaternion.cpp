@@ -1,4 +1,5 @@
 #include "Quaternion.h"
+#include "Vec4.h"
 #include "Euler.h"
 #include <cmath>
 

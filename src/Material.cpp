@@ -63,7 +63,9 @@ std::vector< std::pair <std::string,std::string> > Material::getShaders() const{
   "layout(location = 0) out vec4 color;"
   ""
   "void main(){"
-  "  color = vec4(1.0,0.0,0.0,0.0);"
+  "  float x = gl_FragCoord.x/1280.0;"
+  "  float y = gl_FragCoord.y/720.0;"
+  "  color = vec4(x,y,0.0,1.0);"
   "}";
   vec.push_back(std::make_pair("fragment",f));
 

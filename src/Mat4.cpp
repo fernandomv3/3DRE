@@ -1,4 +1,5 @@
 #include "Mat4.h"
+#include "Vec4.h"
 #include "Quaternion.h"
 #include <algorithm>
 
