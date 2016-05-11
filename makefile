@@ -41,6 +41,22 @@ $(BUILDDIR)/%.o: %.cpp %.h
 
 %.cpp: %.h
 
+Euler.cpp: Quaternion.h MathUtils.h
+
+Geometry.cpp: MathUtils.h
+
+Mat4.cpp: Quaternion.h Vec4.h
+
+Material.cpp: MathUtils.h
+
+Object3D.cpp: MathUtils.h
+
+Quaternion.cpp: Vec4.h Euler.h
+
+Scene.cpp: MathUtils.h
+
+Texture.cpp: MathUtils.h
+
 Object3D.h: Vec4.h Mat4.h Euler.h Quaternion.h
 
 Camera.h: Object3D.h
