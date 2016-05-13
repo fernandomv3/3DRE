@@ -34,7 +34,7 @@ public:
   Geometry& setTangents(std::vector<float> tangents);
   Geometry& setBitangents(std::vector<float> bitangents);
 
-  virtual std::vector< std::tuple<std::string,void*,int,std::type_index> > getAttributes() const;
+  virtual std::vector< std::tuple<std::string,void*,int,int,std::type_index> > getAttributes() const;
 };
 Geometry loadDataFromFile(std::string filename);
 Geometry quadGeometry(int size =1);
