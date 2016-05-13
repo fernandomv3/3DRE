@@ -125,3 +125,8 @@ Quaternion normalize(const Quaternion& q){
   Quaternion res(q);
   return res.normalize();
 }
+
+std::ostream& operator<<(std::ostream& os, const Quaternion& q){
+  os << q[0] << " " << q[1] << " " << q[2] << " " << q[3];
+  return os;
+}

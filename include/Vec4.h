@@ -2,6 +2,7 @@
 #define VEC4H
 
 #include <array>
+#include <iostream>
 
 class Vec4{
 private:
@@ -47,5 +48,7 @@ float distance(const Vec4& v1, const Vec4& v2);
 float dot(const Vec4& v1, const Vec4& v2);
 Vec4 cross(const Vec4& v1, const Vec4& v2);
 Vec4 unitVector(const Vec4& v);
+
+std::ostream& operator<<(std::ostream& os, const Vec4& v);
 
 #endif

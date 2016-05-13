@@ -100,3 +100,8 @@ Vec4 cross(const Vec4& v1, const Vec4& v2){
 Vec4 unitVector(const Vec4& v){
   return v / v.length();
 }
+
+std::ostream& operator<<(std::ostream& os, const Vec4& v){
+  os << v[0] << " " << v[1] << " " << v[2] << " " << v[3];
+  return os;
+}

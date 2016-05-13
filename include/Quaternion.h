@@ -1,6 +1,7 @@
 #ifndef QUATERNION_H
 #define QUATERNION_H
 #include <array>
+#include <iostream>
 class Vec4;
 class Euler;
 class Quaternion{
@@ -31,5 +32,5 @@ Quaternion rotationBetweenVectors(const Vec4& vec1,const Vec4& vec2);
 Quaternion conjugate(const Quaternion& q);
 Quaternion inverse(const Quaternion& q);
 Quaternion normalize(const Quaternion& q);
-
+std::ostream& operator<<(std::ostream& os, const Quaternion& q);
 #endif

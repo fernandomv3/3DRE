@@ -2,6 +2,7 @@
 #define MAT4_H
 
 #include <array>
+#include <iostream>
 
 class Vec4;
 class Quaternion;
@@ -28,6 +29,8 @@ public:
   Mat4& operator*=(const Mat4& m2);
 
   bool operator==(const Mat4& m2)const;
+
+  std::array<float,16>& getElements();
 };
 
 Mat4 operator*(float t,const Mat4& m);
@@ -35,5 +38,6 @@ Mat4 operator*(const Mat4& m,float t);
 Mat4 operator*(const Mat4& m1, const Mat4& m2);
 Mat4 cross(const Mat4& m1, const Mat4& m2);
 Mat4 transpose(const Mat4& m);
+std::ostream& operator<<(std::ostream& os, const Mat4& m);
 
 #endif

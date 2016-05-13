@@ -73,11 +73,11 @@ Mat4 Mat4::rotation(float x , float y, float z){
 Mat4 Mat4::perspective(float fov, float aspectRatio, float zNear, float zFar){
   Mat4 mat;
   float radians = fov * (3.14159f / 180.0f);
-  mat[5] = (1 / tan(radians));
-  mat[0] = aspectRatio * mat[5];
+  mat[0] = (1 / tan(radians));
+  mat[5] = aspectRatio * mat[0];
   mat[10] = ((zFar +zNear)/(zNear -zFar));
   mat[11] = -1.0;
-  mat[14] = -((2.0 * zNear * zFar)/(zNear -zFar));
+  mat[14] = ((2.0 * zNear * zFar)/(zNear -zFar));
   return mat;
 }
 Mat4 Mat4::orthographic(float left,float right,float top,float bottom,float near,float far){
@@ -137,6 +137,10 @@ Mat4 Mat4::rotationFromQuaternion(const Quaternion& q){
   return res;
 }
 
+std::array<float,16>& Mat4::getElements(){
+  return e;
+}
+
 Mat4 operator*(const Mat4& m1, const Mat4& m2){
   Mat4 res(m1);
   return res*=m2;
@@ -180,4 +184,11 @@ Mat4 transpose(const Mat4& m){
     }
   }
   return result;  
+}
+
+std::ostream& operator<<(std::ostream& os, const Mat4& m){
+  for(int i = 0; i < 4; i++){
+    os << m[0+(i*4)] << " " << m[1+(i*4)] << " " << m[2+(i*4)] << " " << m[3+(i*4)] << std::endl;
+  }
+  return os;
 }
