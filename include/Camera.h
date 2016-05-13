@@ -19,6 +19,7 @@ public:
   float getGamma()const;
   Camera& setGamma(float gamma);
   Camera& perspectiveCamera(float fov, float aspectRatio, float near, float far);
+  Camera& orthographicCamera(float dist);
 };
 
 

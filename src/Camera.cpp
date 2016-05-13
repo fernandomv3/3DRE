@@ -38,3 +38,8 @@ Camera& Camera::perspectiveCamera(float fov, float aspectRatio, float near, floa
   projectionMatrix = Mat4::perspective(fov, aspectRatio, near, far);
   return *this;
 }
+
+Camera& Camera::orthographicCamera(float dist){
+  projectionMatrix = Mat4::orthographic(-dist,dist,dist,-dist,dist,-dist);
+  return *this;
+}
