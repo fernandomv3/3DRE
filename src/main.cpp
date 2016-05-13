@@ -1,5 +1,6 @@
 #include <SDL2/SDL.h>
 #include <iostream>
+#include <iomanip>
 #include <memory>
 #include "Camera.h"
 #include "Scene.h"
@@ -8,8 +9,8 @@
 #include "Mesh.h"
 #include "Renderer.h"
 
-const int SCREEN_WIDTH = 1280;
-const int SCREEN_HEIGHT = 720;
+const int SCREEN_WIDTH = 800;
+const int SCREEN_HEIGHT = 600;
 
 SDL_Window* window = NULL;
 SDL_GLContext context = NULL;
@@ -93,14 +94,21 @@ int main(int argc, char** argv){
   Scene scene;
   Renderer renderer;
   
-  cam.perspectiveCamera(60,4.0/3.0,0.001,100.0);
-  cam.getPosition()[2] = 10.0;
+  cam.perspectiveCamera(60.0,800.0/600.0,0.1,100.0);
+  cam.getPosition()[2] = 10;
+  //cam.orthographicCamera(10.0);
 
   auto geom = std::make_shared<Geometry>(quadGeometry());
   auto mat = std::make_shared<Material>(Material());
   auto obj = std::make_shared<Mesh>(Mesh(geom,mat));
+  auto obj2 = std::make_shared<Mesh>(Mesh(geom,mat));
+  obj2->getPosition()[1] = 8;
+  obj2->getPosition()[0] = 8;
+
+  obj->getRotation()[2] = 20;
 
   scene.add(obj);
+  scene.add(obj2);
 
   bool quit = false;
   while(!quit){
@@ -109,6 +117,7 @@ int main(int argc, char** argv){
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     renderer.render(scene,cam);
     SDL_GL_SwapWindow(window);
+    SDL_Delay(1000);
   }
 
   return 0;

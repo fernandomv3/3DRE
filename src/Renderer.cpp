@@ -75,8 +75,49 @@ Renderer& Renderer::setUpVertexAttributes(GLProgram& prog, const Vao& vao){
   return *this;
 }
 
-Renderer& Renderer::render(const Scene& scene, const Camera& cam){
+std::unordered_map<std::string,int>& Renderer::getUniformLocations(GLProgram& prog,const Scene& scene,const Camera& cam,Object3D& obj,Geometry& geom,Material& mat){
+  int program = prog.getProgram();
+  auto &uniforms = prog.getUniforms();
+  uniforms["worldMatrix"] = glGetUniformLocation(program,"worldMatrix");
+  uniforms["projectionMatrix"] = glGetUniformLocation(program,"projectionMatrix");
+  uniforms["modelMatrix"] = glGetUniformLocation(program,"modelMatrix");
+  uniforms["gamma"] = glGetUniformLocation(program,"gamma");
+  return uniforms;
+}
+
+Renderer& Renderer::setUpCameraUniforms(std::unordered_map<std::string,int>& uniforms,const Camera& cam){
+  glUniformMatrix4fv(
+    uniforms["worldMatrix"],
+    1,
+    GL_FALSE,
+    cam.getWorldMatrix().getElements().data()
+  );
+  glUniformMatrix4fv(
+    uniforms["projectionMatrix"],
+    1,
+    GL_FALSE,
+    cam.getProjectionMatrix().getElements().data()
+  );
+  glUniform1f(
+    uniforms["gamma"],
+    1.0/cam.getGamma()
+  );
+  return *this;
+}
+
+Renderer& Renderer::setUpObjectUniforms(std::unordered_map<std::string,int>& uniforms,const Object3D& obj){
+  glUniformMatrix4fv(
+    uniforms["modelMatrix"],
+    1,
+    GL_FALSE,
+    obj.getModelMatrix().getElements().data()
+  );
+  return *this;
+}
+
+Renderer& Renderer::render(const Scene& scene, Camera& cam){
   //Mat4 world = cam.getWorldMatrix();
+  cam.updateWorldMatrix();
   //Mat4 projection = cam.getProjectionMatrix();
   for(auto obj : scene.getObjects()){
     auto mesh = std::static_pointer_cast<Mesh>(obj);
@@ -86,11 +127,18 @@ Renderer& Renderer::render(const Scene& scene, const Camera& cam){
     auto bufferObj =  initGeometryBuffers(*geom);
     auto program = initProgram(*mat);
 
+    auto &uniforms = getUniformLocations(program,scene,cam,*obj,*geom,*mat);
+
     glUseProgram(program.getProgram());
 
     glBindVertexArray(bufferObj.vao);
 
     setUpVertexAttributes(program,bufferObj);
+
+    setUpCameraUniforms(uniforms,cam);
+
+    obj->updateModelMatrix();
+    setUpObjectUniforms(uniforms,*obj);
 
     glBindBuffer(GL_ARRAY_BUFFER,bufferObj.vertex);
     int numVertices = geom->getVertices().size() / 3;
