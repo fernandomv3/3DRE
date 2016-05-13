@@ -50,10 +50,13 @@ std::vector< std::pair <std::string,std::string> > Material::getShaders() const{
   std::string v = 
   "#version 330\n"
   ""
-  "layout(location = 0) in vec4 vPosition;"
+  "uniform mat4 worldMatrix;"
+  "uniform mat4 projectionMatrix;"
+  "uniform mat4 modelMatrix;"
+  "layout(location = 0) in vec3 vPosition;"
   ""
   "void main(){"
-  "  gl_Position = vPosition;"
+  "gl_Position =  projectionMatrix * worldMatrix * modelMatrix *vec4(vPosition,1.0);"
   "}";
   vec.push_back(std::make_pair("vertex",v));
 
@@ -61,11 +64,12 @@ std::vector< std::pair <std::string,std::string> > Material::getShaders() const{
   "#version 330\n"
   ""
   "layout(location = 0) out vec4 color;"
+  "uniform float gamma;"
   ""
   "void main(){"
-  "  float x = gl_FragCoord.x/1280.0;"
-  "  float y = gl_FragCoord.y/720.0;"
-  "  color = vec4(x,y,0.0,1.0);"
+  "  float x = gl_FragCoord.x/800.0;"
+  "  float y = gl_FragCoord.y/600.0;"
+  "  color = pow(vec4(1-x,1-x,1-x,1.0),vec4(gamma,gamma,gamma,1.0));"
   "}";
   vec.push_back(std::make_pair("fragment",f));
 
