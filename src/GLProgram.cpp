@@ -72,7 +72,7 @@ int GLProgram::compileShader(Shader& shader){
   return shader.shaderObject;
 }
 
-std::unordered_map<std::string,Uniform>& GLProgram::getUniforms(){
+std::unordered_map<std::string,int>& GLProgram::getUniforms(){
   return this->uniforms;
 }
 
