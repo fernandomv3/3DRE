@@ -1,5 +1,6 @@
 #include "Object3D.h"
 #include "MathUtils.h"
+#include <algorithm>
 
 Object3D::Object3D(){
   this->uuid = generateUUID();
@@ -75,5 +76,14 @@ Object3D& Object3D::add(const std::shared_ptr<Object3D> child){
   return *this;
 }
 
-  const bool& Object3D::useQuaternions() const{ return rotQuaternions; }
-  bool& Object3D::useQuaternions(bool useQuaternions){ return rotQuaternions; }
+Object3D& Object3D::remove(const std::shared_ptr<Object3D> child){
+  auto it = find(this->children.begin(),this->children.end(), child);
+  if(it != this->children.end()){
+    this->children.erase(it);
+    child->setParent(nullptr);
+  }
+  return *this;
+}
+
+const bool& Object3D::useQuaternions() const{ return rotQuaternions; }
+bool& Object3D::useQuaternions(bool useQuaternions){ return rotQuaternions; }

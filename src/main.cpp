@@ -102,23 +102,23 @@ int main(int argc, char** argv){
   auto mat = std::make_shared<Material>(Material());
   auto obj = std::make_shared<Mesh>(Mesh(geom,mat));
   auto obj2 = std::make_shared<Mesh>(Mesh(geom,mat));
-
-
-  obj->getRotation()[2] = 20;
+  auto parentObj = std::make_shared<Object3D>(Object3D());
+  parentObj->add(obj2);
 
   scene.add(obj);
   scene.add(obj2);
 
   bool quit = false;
-  obj2->getPosition()[0]=10;
+  parentObj->getPosition()[0]=10;
+  parentObj->getPosition()[1]=10;
   while(!quit){
     int t = SDL_GetTicks();
     quit = handleEvents();
     float s = 0.5 * sin(t*0.002) + 1 ;
     float x = 10*sin(t*0.001);
     float y = 10*cos(t*0.001);
-    //obj2->getPosition()[1] = y;
-    //obj2->getPosition()[0] = x;
+    //parentObj->getPosition()[1] = 0;
+    //parentObj->getPosition()[0] = 0;
     obj2->getRotation()[2] += 0.1;
     obj->getRotation()[2] -= 0.1;
     obj->setScale(Vec4(s,s,s,0.0));

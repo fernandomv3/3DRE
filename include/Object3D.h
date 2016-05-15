@@ -37,6 +37,7 @@ public:
   Object3D& setVisible(bool visible);
   Object3D& setParent(const std::shared_ptr<Object3D> parent);
   Object3D& add(const std::shared_ptr<Object3D> child);
+  Object3D& remove(const std::shared_ptr<Object3D> child);
   const bool& useQuaternions() const;
   bool& useQuaternions(bool quaternions);
 };
