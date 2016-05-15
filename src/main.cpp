@@ -102,8 +102,7 @@ int main(int argc, char** argv){
   auto mat = std::make_shared<Material>(Material());
   auto obj = std::make_shared<Mesh>(Mesh(geom,mat));
   auto obj2 = std::make_shared<Mesh>(Mesh(geom,mat));
-  obj2->getPosition()[1] = 8;
-  obj2->getPosition()[0] = 8;
+
 
   obj->getRotation()[2] = 20;
 
@@ -111,13 +110,23 @@ int main(int argc, char** argv){
   scene.add(obj2);
 
   bool quit = false;
+  obj2->getPosition()[0]=10;
   while(!quit){
+    int t = SDL_GetTicks();
     quit = handleEvents();
+    float s = 0.5 * sin(t*0.002) + 1 ;
+    float x = 10*sin(t*0.001);
+    float y = 10*cos(t*0.001);
+    //obj2->getPosition()[1] = y;
+    //obj2->getPosition()[0] = x;
+    obj2->getRotation()[2] += 0.1;
+    obj->getRotation()[2] -= 0.1;
+    obj->setScale(Vec4(s,s,s,0.0));
     glClearColor(1.0,1.0,1.0,1.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     renderer.render(scene,cam);
     SDL_GL_SwapWindow(window);
-    SDL_Delay(1000);
+    //SDL_Delay(1000);
   }
 
   return 0;
