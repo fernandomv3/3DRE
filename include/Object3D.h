@@ -17,7 +17,7 @@ private:
   Vec4 scale;
   Mat4 modelMatrix;
   bool visible;
-  std::weak_ptr<Object3D> parent;
+  Object3D* parent;
   std::vector< std::shared_ptr<Object3D> > children;
   bool rotQuaternions;
 public:

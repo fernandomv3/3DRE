@@ -10,7 +10,7 @@ Object3D::Object3D(){
   this->modelMatrix = Mat4::identity();
   this->rotation.setQuaternion(&this->quaternion);
   this->quaternion.setEuler(&this->rotation);
-  this->parent = std::weak_ptr<Object3D>();
+  this->parent = nullptr;
   this->children = std::vector< std::shared_ptr<Object3D> >();
   this->rotQuaternions = false;
 }
@@ -49,10 +49,9 @@ Object3D& Object3D::updateModelMatrix(){
   }
   Mat4 s = Mat4::scale(scale[0],scale[1],scale[2]);
   Mat4 res;
-  auto p = this->parent.lock();
-  if(p){
-    p->updateModelMatrix();
-    res = p->modelMatrix;
+  if(parent){
+    parent->updateModelMatrix();
+    res = parent->modelMatrix;
   }else{
     res = Mat4::identity();
   }
@@ -67,12 +66,12 @@ Object3D& Object3D::setVisible(bool visible){
   return *this;
 }
 Object3D& Object3D::setParent(const std::shared_ptr<Object3D> parent){
-  this->parent = std::weak_ptr<Object3D>(parent);
+  this->parent = parent.get();
   return *this;
 }
 Object3D& Object3D::add(const std::shared_ptr<Object3D> child){
   this->children.push_back(child);
-  //child->parent = std::weak_ptr<Object3D>(this);
+  child->parent = this;
   return *this;
 }
 
