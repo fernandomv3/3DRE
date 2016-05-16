@@ -47,6 +47,11 @@ std::shared_ptr<Texture> Material::getSpecularMap()const { return specularMap; }
 
 std::vector< std::pair <std::string,std::string> > Material::getShaders() const{
   std::vector< std::pair <std::string,std::string> > vec;
+  std::string vf = "vertex.glsl";
+  vec.push_back(std::make_pair("vertexFile",vf));
+  std::string ff = "fragment.glsl";
+  vec.push_back(std::make_pair("fragmentFile",ff));
+  /*
   std::string v = 
   "#version 330\n"
   ""
@@ -71,7 +76,7 @@ std::vector< std::pair <std::string,std::string> > Material::getShaders() const{
   "  float y = gl_FragCoord.y/600.0;"
   "  color = pow(vec4(1-x,1-y,(x+y)/2,1.0),vec4(gamma,gamma,gamma,1.0));"
   "}";
-  vec.push_back(std::make_pair("fragment",f));
+  vec.push_back(std::make_pair("fragment",f));*/
 
   return vec;
 }

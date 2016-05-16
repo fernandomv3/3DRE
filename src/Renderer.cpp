@@ -51,7 +51,8 @@ GLProgram& Renderer::initProgram(const Material& mat){
   auto &program = this->programs[mat.getUUID()];
   if(program.getProgram() == 0){
     for(auto s : mat.getShaders()){
-      program.addShader(s.first,s.second);
+      std::string src = program.getSourceFromFile(s.second);
+      program.addShader(s.first.substr(0,s.first.size()-4),src);
     }
     program.makeProgram();
   }

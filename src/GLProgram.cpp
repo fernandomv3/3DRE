@@ -26,7 +26,7 @@ GLProgram& GLProgram::addShader(std::string type, std::string src){
 }
 
 std::string GLProgram::getSourceFromFile(std::string filename){
-  std::ifstream t("file.txt");
+  std::ifstream t(filename);
   return std::string((std::istreambuf_iterator<char>(t)),
                    std::istreambuf_iterator<char>());
 }
