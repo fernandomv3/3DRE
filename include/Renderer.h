@@ -25,8 +25,10 @@ class Renderer{
 private:
   std::unordered_map<std::string,Vao> vao;
   std::unordered_map<std::string,GLProgram> programs;
+  float time;
 public:
   Renderer(){};
+  Renderer& setTime(float ms);
   Renderer& render(const Scene& scene,Camera& camera);
   Vao& initGeometryBuffers(const Geometry& geom);
   GLProgram& initProgram(const Material& mat);
@@ -34,6 +36,7 @@ public:
   std::unordered_map<std::string,int>& getUniformLocations(GLProgram& prog,const Scene& scene,const Camera& cam,Object3D& obj,Geometry& geom,Material& mat);
   Renderer& setUpCameraUniforms(std::unordered_map<std::string,int>& uniforms,const Camera& cam);
   Renderer& setUpObjectUniforms(std::unordered_map<std::string,int>& uniforms,const Object3D& obj);
+  Renderer& setUpGlobalUniforms(std::unordered_map<std::string,int>& uniforms);
 };
 
 uint makeBuffer(GLenum target, const void* data, int size, GLenum usage = GL_STATIC_DRAW);

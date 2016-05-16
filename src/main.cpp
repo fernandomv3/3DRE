@@ -112,11 +112,10 @@ int main(int argc, char** argv){
   parentObj->getPosition()[0]=8;
   parentObj->getPosition()[1]=8;
   while(!quit){
-    int t = SDL_GetTicks();
+    float t = SDL_GetTicks()*0.001;
+    renderer.setTime(t);
     quit = handleEvents();
-    float s = 0.5 * sin(t*0.002) + 1 ;
-    float x = 10*sin(t*0.001);
-    float y = 10*cos(t*0.001);
+    float s = 0.5 * sin(t) + 1 ;
     parentObj->getRotation()[2] += 0.05;
     obj2->getRotation()[2] += 0.1;
     obj->getRotation()[2] -= 0.1;

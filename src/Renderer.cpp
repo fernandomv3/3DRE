@@ -58,12 +58,23 @@ GLProgram& Renderer::initProgram(const Material& mat){
   }
   auto &attrLoc = program.getAttrLoc();
   attrLoc["vPosition"] = glGetAttribLocation(program.getProgram(),"vPosition");
+  attrLoc["vPosition"] = glGetAttribLocation(program.getProgram(),"vNormal");
   return program;
 }
 
 Renderer& Renderer::setUpVertexAttributes(GLProgram& prog, const Vao& vao){
   glBindBuffer(GL_ARRAY_BUFFER,vao.vertex);
   int loc = prog.getAttrLoc()["vPosition"];
+  glVertexAttribPointer(
+    loc,
+    3,
+    GL_FLOAT,
+    GL_FALSE,
+    0,
+    (void*)0
+  );
+  glEnableVertexAttribArray(loc);
+  loc = prog.getAttrLoc()["vNormal"];
   glVertexAttribPointer(
     loc,
     3,
@@ -83,6 +94,7 @@ std::unordered_map<std::string,int>& Renderer::getUniformLocations(GLProgram& pr
   uniforms["projectionMatrix"] = glGetUniformLocation(program,"projectionMatrix");
   uniforms["modelMatrix"] = glGetUniformLocation(program,"modelMatrix");
   uniforms["gamma"] = glGetUniformLocation(program,"gamma");
+  uniforms["time"] = glGetUniformLocation(program,"time");
   return uniforms;
 }
 
@@ -116,6 +128,15 @@ Renderer& Renderer::setUpObjectUniforms(std::unordered_map<std::string,int>& uni
   return *this;
 }
 
+Renderer& Renderer::setUpGlobalUniforms(std::unordered_map<std::string,int>& uniforms){
+  glUniform1f(
+    uniforms["time"],
+    this->time
+  );
+  return *this;
+}
+
+
 Renderer& Renderer::render(const Scene& scene, Camera& cam){
   //Mat4 world = cam.getWorldMatrix();
   cam.updateWorldMatrix();
@@ -141,6 +162,8 @@ Renderer& Renderer::render(const Scene& scene, Camera& cam){
     obj->updateModelMatrix();
     setUpObjectUniforms(uniforms,*obj);
 
+    setUpGlobalUniforms(uniforms);
+
     glBindBuffer(GL_ARRAY_BUFFER,bufferObj.vertex);
     int numVertices = geom->getVertices().size() / 3;
     glDrawArrays(
@@ -151,6 +174,11 @@ Renderer& Renderer::render(const Scene& scene, Camera& cam){
     glBindVertexArray(0);
   }
 
+  return *this;
+}
+
+Renderer& Renderer::setTime(float ms){
+  this->time = ms;
   return *this;
 }
 
