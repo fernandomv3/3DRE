@@ -92,11 +92,10 @@ int main(int argc, char** argv){
 
   Camera cam;
   Scene scene;
-  Renderer renderer;
+  Renderer renderer(SCREEN_WIDTH,SCREEN_HEIGHT);
   
-  cam.perspectiveCamera(60.0,800.0/600.0,0.1,100.0);
+  cam.perspectiveCamera(60.0,float(SCREEN_WIDTH)/float(SCREEN_HEIGHT),0.1,100.0);
   cam.getPosition()[2] = 10;
-  //cam.orthographicCamera(10.0);
 
   auto geom = std::make_shared<Geometry>(quadGeometry());
   auto mat = std::make_shared<Material>(Material());
@@ -124,7 +123,6 @@ int main(int argc, char** argv){
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     renderer.render(scene,cam);
     SDL_GL_SwapWindow(window);
-    //SDL_Delay(1000);
   }
 
   return 0;

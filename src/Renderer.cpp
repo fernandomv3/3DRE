@@ -1,8 +1,14 @@
 #include "Renderer.h"
 #include <iostream>
 
+Renderer::Renderer(int width, int height){
+  this->height = height;
+  this->width = width;
+}
+
 Vao& Renderer::initGeometryBuffers(const Geometry& geom){
   auto &bufferObj = this->vao[geom.getUUID()];
+  auto geomAttr =geom.getAttributes();
   if (bufferObj.vao == 0) glGenVertexArrays(1,&bufferObj.vao);
   if( (bufferObj.vertex == 0) && !geom.getVertices().empty()){
     uint buf = makeBuffer(
@@ -55,47 +61,56 @@ GLProgram& Renderer::initProgram(const Material& mat){
       program.addShader(s.first.substr(0,s.first.size()-4),src);
     }
     program.makeProgram();
+    auto &attrLoc = program.getAttrLoc();
+    attrLoc["vPosition"] = glGetAttribLocation(program.getProgram(),"vPosition");
+    attrLoc["vNormal"] = glGetAttribLocation(program.getProgram(),"vNormal");
   }
-  auto &attrLoc = program.getAttrLoc();
-  attrLoc["vPosition"] = glGetAttribLocation(program.getProgram(),"vPosition");
-  attrLoc["vPosition"] = glGetAttribLocation(program.getProgram(),"vNormal");
   return program;
 }
 
-Renderer& Renderer::setUpVertexAttributes(GLProgram& prog, const Vao& vao){
+Renderer& Renderer::setUpVertexAttributes(GLProgram& prog, Vao& vao){
   glBindBuffer(GL_ARRAY_BUFFER,vao.vertex);
-  int loc = prog.getAttrLoc()["vPosition"];
-  glVertexAttribPointer(
-    loc,
-    3,
-    GL_FLOAT,
-    GL_FALSE,
-    0,
-    (void*)0
-  );
-  glEnableVertexAttribArray(loc);
-  loc = prog.getAttrLoc()["vNormal"];
-  glVertexAttribPointer(
-    loc,
-    3,
-    GL_FLOAT,
-    GL_FALSE,
-    0,
-    (void*)0
-  );
-  glEnableVertexAttribArray(loc);
+  if(!vao.initialized){
+    int loc = prog.getAttrLoc()["vPosition"];
+    glVertexAttribPointer(
+      loc,
+      3,
+      GL_FLOAT,
+      GL_FALSE,
+      0,
+      (void*)0
+    );
+    glEnableVertexAttribArray(loc);
+
+    glBindBuffer(GL_ARRAY_BUFFER,vao.normal);
+    loc = prog.getAttrLoc()["vNormal"];
+    glVertexAttribPointer(
+      loc,
+      3,
+      GL_FLOAT,
+      GL_FALSE,
+      0,
+      (void*)0
+    );
+    glEnableVertexAttribArray(loc);
+    vao.initialized = true;
+  }
   return *this;
 }
 
 std::unordered_map<std::string,int>& Renderer::getUniformLocations(GLProgram& prog,const Scene& scene,const Camera& cam,Object3D& obj,Geometry& geom,Material& mat){
   int program = prog.getProgram();
   auto &uniforms = prog.getUniforms();
-  uniforms["worldMatrix"] = glGetUniformLocation(program,"worldMatrix");
-  uniforms["projectionMatrix"] = glGetUniformLocation(program,"projectionMatrix");
-  uniforms["modelMatrix"] = glGetUniformLocation(program,"modelMatrix");
-  uniforms["normalModelMatrix"] = glGetUniformLocation(program,"normalModelMatrix");
-  uniforms["gamma"] = glGetUniformLocation(program,"gamma");
-  uniforms["time"] = glGetUniformLocation(program,"time");
+  if(uniforms.empty()){
+    uniforms["worldMatrix"] = glGetUniformLocation(program,"worldMatrix");
+    uniforms["projectionMatrix"] = glGetUniformLocation(program,"projectionMatrix");
+    uniforms["modelMatrix"] = glGetUniformLocation(program,"modelMatrix");
+    uniforms["normalModelMatrix"] = glGetUniformLocation(program,"normalModelMatrix");
+    uniforms["gamma"] = glGetUniformLocation(program,"gamma");
+    uniforms["time"] = glGetUniformLocation(program,"time");
+    uniforms["screenWidth"] = glGetUniformLocation(program,"screenWidth");
+    uniforms["screenHeight"] = glGetUniformLocation(program,"screenHeight");
+  }
   return uniforms;
 }
 
@@ -119,7 +134,9 @@ Renderer& Renderer::setUpCameraUniforms(std::unordered_map<std::string,int>& uni
   return *this;
 }
 
-Renderer& Renderer::setUpObjectUniforms(std::unordered_map<std::string,int>& uniforms,const Object3D& obj){
+Renderer& Renderer::setUpObjectUniforms(std::unordered_map<std::string,int>& uniforms,Object3D& obj){
+  obj.updateModelMatrix();
+  obj.updateNormalModelMatrix();
   glUniformMatrix4fv(
     uniforms["modelMatrix"],
     1,
@@ -139,6 +156,14 @@ Renderer& Renderer::setUpGlobalUniforms(std::unordered_map<std::string,int>& uni
   glUniform1f(
     uniforms["time"],
     this->time
+  );
+  glUniform1i(
+    uniforms["screenWidth"],
+    this->width
+  );
+  glUniform1i(
+    uniforms["screenHeight"],
+    this->height
   );
   return *this;
 }
@@ -166,7 +191,6 @@ Renderer& Renderer::render(const Scene& scene, Camera& cam){
 
     setUpCameraUniforms(uniforms,cam);
 
-    obj->updateModelMatrix();
     setUpObjectUniforms(uniforms,*obj);
 
     setUpGlobalUniforms(uniforms);

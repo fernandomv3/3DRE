@@ -42,12 +42,16 @@ Geometry& Geometry::setBitangents(std::vector<float> bitangents){
 std::vector< std::tuple<std::string,void*,int,int,std::type_index> > Geometry::getAttributes() const{
   std::vector< std::tuple<std::string,void*,int,int,std::type_index> > vec;
   
-  vec.push_back(std::make_tuple("index",(void*)elements.data(),elements.size(),1,std::type_index(typeid(ushort))));
-
-  vec.push_back(std::make_tuple("vPosition",(void*)vertices.data(),vertices.size(),3,std::type_index(typeid(float))));
-  vec.push_back(std::make_tuple("vNormal",(void*)normals.data(),normals.size(),3,std::type_index(typeid(float))));
-  vec.push_back(std::make_tuple("vUv",(void*)texCoords.data(),texCoords.size(),2,std::type_index(typeid(float))));
-  vec.push_back(std::make_tuple("vTangent",(void*)tangents.data(),tangents.size(),3,std::type_index(typeid(float))));
+  if(!elements.empty())
+    vec.push_back(std::make_tuple("index",(void*)elements.data(),elements.size(),1,std::type_index(typeid(ushort))));
+  if(!vertices.empty())
+    vec.push_back(std::make_tuple("vPosition",(void*)vertices.data(),vertices.size(),3,std::type_index(typeid(float))));
+  if(!normals.empty())
+    vec.push_back(std::make_tuple("vNormal",(void*)normals.data(),normals.size(),3,std::type_index(typeid(float))));
+  if(!texCoords.empty())
+    vec.push_back(std::make_tuple("vUv",(void*)texCoords.data(),texCoords.size(),2,std::type_index(typeid(float))));
+  if(!tangents.empty())
+    vec.push_back(std::make_tuple("vTangent",(void*)tangents.data(),tangents.size(),3,std::type_index(typeid(float))));
   return vec;
 }
 
