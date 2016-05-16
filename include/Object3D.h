@@ -16,6 +16,7 @@ private:
   Quaternion quaternion;
   Vec4 scale;
   Mat4 modelMatrix;
+  Mat4 normalModelMatrix;
   bool visible;
   Object3D* parent;
   std::vector< std::shared_ptr<Object3D> > children;
@@ -32,7 +33,9 @@ public:
   Object3D& setScale(const Vec4 scale);
   Object3D& setQuaternion(const Quaternion quaternion);
   Mat4 getModelMatrix()const;
+  Mat4 getNormalModelMatrix()const;
   Object3D& updateModelMatrix();
+  Object3D& updateNormalModelMatrix();
   bool isVisible()const;
   Object3D& setVisible(bool visible);
   Object3D& setParent(const std::shared_ptr<Object3D> parent);

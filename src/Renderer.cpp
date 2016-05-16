@@ -93,6 +93,7 @@ std::unordered_map<std::string,int>& Renderer::getUniformLocations(GLProgram& pr
   uniforms["worldMatrix"] = glGetUniformLocation(program,"worldMatrix");
   uniforms["projectionMatrix"] = glGetUniformLocation(program,"projectionMatrix");
   uniforms["modelMatrix"] = glGetUniformLocation(program,"modelMatrix");
+  uniforms["normalModelMatrix"] = glGetUniformLocation(program,"normalModelMatrix");
   uniforms["gamma"] = glGetUniformLocation(program,"gamma");
   uniforms["time"] = glGetUniformLocation(program,"time");
   return uniforms;
@@ -124,6 +125,12 @@ Renderer& Renderer::setUpObjectUniforms(std::unordered_map<std::string,int>& uni
     1,
     GL_FALSE,
     obj.getModelMatrix().getElements().data()
+  );
+  glUniformMatrix4fv(
+    uniforms["normalModelMatrix"],
+    1,
+    GL_FALSE,
+    obj.getNormalModelMatrix().getElements().data()
   );
   return *this;
 }

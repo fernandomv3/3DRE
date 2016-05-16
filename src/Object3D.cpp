@@ -9,6 +9,7 @@ Object3D::Object3D(){
   this->quaternion = Quaternion(0.0,0.0,0.0,1.0);
   this->scale = Vec4(1.0,1.0,1.0,1.0);
   this->modelMatrix = Mat4::identity();
+  this->normalModelMatrix = Mat4::identity();
   this->rotation.setQuaternion(&this->quaternion);
   this->quaternion.setEuler(&this->rotation);
   this->parent = nullptr;
@@ -22,6 +23,7 @@ Euler& Object3D::getRotation(){ return rotation; }
 Vec4& Object3D::getScale(){ return scale; }
 Quaternion& Object3D::getQuaternion(){ return quaternion; }
 Mat4 Object3D::getModelMatrix()const { return modelMatrix; }
+Mat4 Object3D::getNormalModelMatrix()const { return normalModelMatrix; }
 
 Object3D& Object3D::setPosition(const Vec4 position) {
   this->position = position;
@@ -58,6 +60,24 @@ Object3D& Object3D::updateModelMatrix(){
   }
 
   this->modelMatrix = cross(cross(cross(res,s),r),t);
+  return *this;
+}
+Object3D& Object3D::updateNormalModelMatrix(){
+  Mat4 t = Mat4::translation(-position[0],-position[1],-position[2]);
+  Mat4 r;
+  if (!rotQuaternions){
+    r = Mat4::rotation(-rotation[0],-rotation[1],-rotation[2]);
+  }else{
+    r = Mat4::rotationFromQuaternion(inverse(quaternion));
+  }
+  Mat4 s = Mat4::scale(1.0/scale[0],1.0/scale[1],1.0/scale[2]);
+  Mat4 res = Mat4::identity();
+  res = cross(cross(cross(res,s),r),t);
+  if(parent){
+    parent->updateNormalModelMatrix();
+    res = cross(res,parent->modelMatrix);
+  }
+  this->normalModelMatrix = transpose(res);
   return *this;
 }
 
