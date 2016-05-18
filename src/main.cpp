@@ -98,7 +98,7 @@ int main(int argc, char** argv){
   cam.getPosition()[2] = 10;
 
   auto geom = std::make_shared<Geometry>(quadGeometry());
-  auto mat = std::make_shared<Material>(Material());
+  auto mat = std::make_shared<Material>(Material(Vec4(1.0,0.0,0.0,0.0)));
   auto obj = std::make_shared<Mesh>(Mesh(geom,mat));
   auto obj2 = std::make_shared<Mesh>(Mesh(geom,mat));
   auto parentObj = std::make_shared<Object3D>(Object3D());

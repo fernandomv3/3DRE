@@ -110,6 +110,9 @@ std::unordered_map<std::string,int>& Renderer::getUniformLocations(GLProgram& pr
     uniforms["time"] = glGetUniformLocation(program,"time");
     uniforms["screenWidth"] = glGetUniformLocation(program,"screenWidth");
     uniforms["screenHeight"] = glGetUniformLocation(program,"screenHeight");
+    uniforms["material.diffuse"] = glGetUniformLocation(program,"material.diffuse");
+    uniforms["material.specular"] = glGetUniformLocation(program,"material.specular");
+    uniforms["material.shininess"] = glGetUniformLocation(program,"material.shininess");
   }
   return uniforms;
 }
@@ -148,6 +151,24 @@ Renderer& Renderer::setUpObjectUniforms(std::unordered_map<std::string,int>& uni
     1,
     GL_FALSE,
     obj.getNormalModelMatrix().getElements().data()
+  );
+  return *this;
+}
+
+Renderer& Renderer::setUpMaterialUniforms(std::unordered_map<std::string,int>& uniforms,Material& mat){
+  glUniform4fv(
+    uniforms["material.diffuse"],
+    1,
+    mat.getDiffuseColor().getElements().data()
+  );
+  glUniform4fv(
+    uniforms["material.specular"],
+    1,
+    mat.getSpecularColor().getElements().data()
+  );
+  glUniform1f(
+    uniforms["material.shininess"],
+    mat.getShininess()
   );
   return *this;
 }
@@ -192,6 +213,8 @@ Renderer& Renderer::render(const Scene& scene, Camera& cam){
     setUpCameraUniforms(uniforms,cam);
 
     setUpObjectUniforms(uniforms,*obj);
+
+    setUpMaterialUniforms(uniforms,*mat);
 
     setUpGlobalUniforms(uniforms);
 

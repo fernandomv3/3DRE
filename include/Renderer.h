@@ -39,6 +39,7 @@ public:
   std::unordered_map<std::string,int>& getUniformLocations(GLProgram& prog,const Scene& scene,const Camera& cam,Object3D& obj,Geometry& geom,Material& mat);
   Renderer& setUpCameraUniforms(std::unordered_map<std::string,int>& uniforms,const Camera& cam);
   Renderer& setUpObjectUniforms(std::unordered_map<std::string,int>& uniforms,Object3D& obj);
+  Renderer& setUpMaterialUniforms(std::unordered_map<std::string,int>& uniforms,Material& mat);
   Renderer& setUpGlobalUniforms(std::unordered_map<std::string,int>& uniforms);
 };
 
