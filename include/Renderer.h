@@ -10,15 +10,17 @@
 #include <string>
 #include <memory>
 
+struct vbo{
+  uint buffer;
+  char numComponents;
+  uint type;
+};
+typedef struct vbo Vbo;
+
 struct vao{
   uint vao = 0;
-  uint vertex = 0;
-  uint index = 0;
-  uint normal = 0;
-  uint uv = 0;
-  uint tangent = 0;
   bool initialized = false;
-  std::unordered_map<std::string,uint> extra;
+  std::unordered_map<std::string,Vbo> vbo;
 };
 typedef struct vao Vao;
 
@@ -34,7 +36,7 @@ public:
   Renderer& setTime(float ms);
   Renderer& render(const Scene& scene,Camera& camera);
   Vao& initGeometryBuffers(const Geometry& geom);
-  GLProgram& initProgram(const Material& mat);
+  GLProgram& initProgram(const Material& mat, const Geometry& geom);
   Renderer& setUpVertexAttributes(GLProgram& prog,Vao& vao);
   std::unordered_map<std::string,int>& getUniformLocations(GLProgram& prog,const Scene& scene,const Camera& cam,Object3D& obj,Geometry& geom,Material& mat);
   Renderer& setUpCameraUniforms(std::unordered_map<std::string,int>& uniforms,const Camera& cam);

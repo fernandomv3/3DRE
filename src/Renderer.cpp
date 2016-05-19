@@ -8,53 +8,33 @@ Renderer::Renderer(int width, int height){
 
 Vao& Renderer::initGeometryBuffers(const Geometry& geom){
   auto &bufferObj = this->vao[geom.getUUID()];
-  auto geomAttr =geom.getAttributes();
   if (bufferObj.vao == 0) glGenVertexArrays(1,&bufferObj.vao);
-  if( (bufferObj.vertex == 0) && !geom.getVertices().empty()){
+  auto geomAttr =geom.getAttributes();
+  for(auto attr : geomAttr){
+    std::string name = std::get<0>(attr);
+    std::type_index t = std::get<4>(attr);
+    int elementSize = 0;
+    if (t == std::type_index(typeid(float))){
+      elementSize = sizeof(GLfloat);
+      bufferObj.vbo[name].type = GL_FLOAT;
+    }else if(t == std::type_index(typeid(ushort))){
+      elementSize = sizeof(GLushort);
+      bufferObj.vbo[name].type =GL_UNSIGNED_SHORT;
+    }
     uint buf = makeBuffer(
-      GL_ARRAY_BUFFER,
-      geom.getVertices().data(),
-      geom.getVertices().size() * sizeof(GLfloat)
+      std::get<0>(attr) == "index" ? GL_ELEMENT_ARRAY_BUFFER : GL_ARRAY_BUFFER,
+      std::get<1>(attr),
+      std::get<2>(attr) * elementSize
     );
-    bufferObj.vertex = buf;
-  }
-  if( (bufferObj.index == 0) && !geom.getElements().empty()){
-    uint buf = makeBuffer(
-      GL_ELEMENT_ARRAY_BUFFER,
-      geom.getElements().data(),
-      geom.getElements().size() * sizeof(GLushort)
-    );
-    bufferObj.index = buf;
-  }
-  if( (bufferObj.normal == 0) && !geom.getNormals().empty()){
-    uint buf = makeBuffer(
-      GL_ARRAY_BUFFER,
-      geom.getNormals().data(),
-      geom.getNormals().size() * sizeof(GLfloat)
-    );
-    bufferObj.normal = buf;
-  }
-  if( (bufferObj.uv == 0) && !geom.getTexCoords().empty()){
-    uint buf = makeBuffer(
-      GL_ARRAY_BUFFER,
-      geom.getTexCoords().data(),
-      geom.getTexCoords().size() * sizeof(GLfloat)
-    );
-    bufferObj.uv = buf;
-  }
-  if( (bufferObj.tangent == 0) && !geom.getTangents().empty()){
-    uint buf = makeBuffer(
-      GL_ARRAY_BUFFER,
-      geom.getTangents().data(),
-      geom.getTangents().size() * sizeof(GLfloat)
-    );
-    bufferObj.tangent = buf;
+    bufferObj.vbo[name].numComponents = std::get<3>(attr);
+    bufferObj.vbo[name].buffer = buf;
   }
   return bufferObj;
 }
 
-GLProgram& Renderer::initProgram(const Material& mat){
+GLProgram& Renderer::initProgram(const Material& mat, const Geometry& geom){
   auto &program = this->programs[mat.getUUID()];
+  auto &bufferObj = this->vao[geom.getUUID()];
   if(program.getProgram() == 0){
     for(auto s : mat.getShaders()){
       std::string src = program.getSourceFromFile(s.second);
@@ -62,37 +42,30 @@ GLProgram& Renderer::initProgram(const Material& mat){
     }
     program.makeProgram();
     auto &attrLoc = program.getAttrLoc();
-    attrLoc["vPosition"] = glGetAttribLocation(program.getProgram(),"vPosition");
-    attrLoc["vNormal"] = glGetAttribLocation(program.getProgram(),"vNormal");
+    for(auto vbo : bufferObj.vbo){
+      if(vbo.first == "index") continue;
+      attrLoc[vbo.first] = glGetAttribLocation(program.getProgram(),vbo.first.data());
+    }
   }
   return program;
 }
 
 Renderer& Renderer::setUpVertexAttributes(GLProgram& prog, Vao& vao){
-  glBindBuffer(GL_ARRAY_BUFFER,vao.vertex);
   if(!(vao.initialized)){
-    int loc = prog.getAttrLoc()["vPosition"];
-    glVertexAttribPointer(
-      loc,
-      3,
-      GL_FLOAT,
-      GL_FALSE,
-      0,
-      (void*)0
-    );
-    glEnableVertexAttribArray(loc);
-
-    glBindBuffer(GL_ARRAY_BUFFER,vao.normal);
-    loc = prog.getAttrLoc()["vNormal"];
-    glVertexAttribPointer(
-      loc,
-      3,
-      GL_FLOAT,
-      GL_FALSE,
-      0,
-      (void*)0
-    );
-    glEnableVertexAttribArray(loc);
+    for(auto vbo : vao.vbo){
+      if(vbo.first == "index")continue;
+      glBindBuffer(GL_ARRAY_BUFFER,vbo.second.buffer);
+      int loc = prog.getAttrLoc()[vbo.first];
+      glVertexAttribPointer(
+        loc,
+        vbo.second.numComponents,
+        vbo.second.type,
+        GL_FALSE,
+        0,
+        (void*)0
+      );
+      glEnableVertexAttribArray(loc);  
+    }
     vao.initialized = true;
   }
   return *this;
@@ -199,7 +172,7 @@ Renderer& Renderer::render(const Scene& scene, Camera& cam){
 
     auto& bufferObj =  initGeometryBuffers(*geom);
 
-    auto& program = initProgram(*mat);
+    auto& program = initProgram(*mat,*geom);
     auto &uniforms = getUniformLocations(program,scene,cam,*obj,*geom,*mat);
 
     glUseProgram(program.getProgram());
@@ -216,7 +189,7 @@ Renderer& Renderer::render(const Scene& scene, Camera& cam){
 
     setUpGlobalUniforms(uniforms);
 
-    glBindBuffer(GL_ARRAY_BUFFER,bufferObj.vertex);
+    glBindBuffer(GL_ARRAY_BUFFER,bufferObj.vbo["vPosition"].buffer);
     int numVertices = geom->getVertices().size() / 3;
     glDrawArrays(
       GL_TRIANGLES,
