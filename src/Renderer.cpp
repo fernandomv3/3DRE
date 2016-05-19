@@ -11,6 +11,7 @@ Vao& Renderer::initGeometryBuffers(const Geometry& geom){
   auto geomAttr =geom.getAttributes();
   if (bufferObj.vao == 0) glGenVertexArrays(1,&bufferObj.vao);
   if( (bufferObj.vertex == 0) && !geom.getVertices().empty()){
+    std::cout << "vertex!!!!" << std::endl;
     uint buf = makeBuffer(
       GL_ARRAY_BUFFER,
       geom.getVertices().data(),
@@ -100,8 +101,9 @@ Renderer& Renderer::setUpVertexAttributes(GLProgram& prog, Vao& vao){
 
 std::unordered_map<std::string,int>& Renderer::getUniformLocations(GLProgram& prog,const Scene& scene,const Camera& cam,Object3D& obj,Geometry& geom,Material& mat){
   int program = prog.getProgram();
-  auto &uniforms = prog.getUniforms();
+  auto& uniforms = prog.getUniforms();
   if(uniforms.empty()){
+    std::cout << "init uniforms" << std::endl;
     uniforms["worldMatrix"] = glGetUniformLocation(program,"worldMatrix");
     uniforms["projectionMatrix"] = glGetUniformLocation(program,"projectionMatrix");
     uniforms["modelMatrix"] = glGetUniformLocation(program,"modelMatrix");
@@ -192,6 +194,7 @@ Renderer& Renderer::setUpGlobalUniforms(std::unordered_map<std::string,int>& uni
 
 Renderer& Renderer::render(const Scene& scene, Camera& cam){
   //Mat4 world = cam.getWorldMatrix();
+  void* prog;
   cam.updateWorldMatrix();
   //Mat4 projection = cam.getProjectionMatrix();
   for(auto obj : scene.getObjects()){
@@ -200,8 +203,10 @@ Renderer& Renderer::render(const Scene& scene, Camera& cam){
     auto mat = mesh->getMaterial();
 
     auto bufferObj =  initGeometryBuffers(*geom);
-    auto program = initProgram(*mat);
 
+    auto& program = initProgram(*mat);
+    prog = (void*)&program;
+    //std::cout<< program.getUniforms().size() << std::endl;
     auto &uniforms = getUniformLocations(program,scene,cam,*obj,*geom,*mat);
 
     glUseProgram(program.getProgram());

@@ -113,12 +113,12 @@ int main(int argc, char** argv){
   while(!quit){
     float t = SDL_GetTicks()*0.001;
     renderer.setTime(t);
-    quit = handleEvents();
     float s = 0.5 * sin(t) + 1 ;
     parentObj->getRotation()[2] += 0.05;
     obj2->getRotation()[2] += 0.1;
     obj->getRotation()[2] -= 0.1;
     obj->setScale(Vec4(s,s,s,0.0));
+    quit = handleEvents();
     glClearColor(1.0,1.0,1.0,1.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     renderer.render(scene,cam);

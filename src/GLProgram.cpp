@@ -10,6 +10,7 @@
 
 GLProgram::GLProgram(){
   this->program = 0;
+  this->uniforms = std::unordered_map<std::string,int>();
 }
 
 

@@ -29,8 +29,6 @@ Texture& Texture::loadFile(){
   char* data = new char[image->w * image->h * image->format->BytesPerPixel];
   memcpy(data,image->pixels,image->w * image->h * image->format->BytesPerPixel);
   this->image = std::unique_ptr<char[]>(data);
-
-  this->innerFormat = this->gamma ? GL_SRGB8 : GL_RGB8;
   
   if(image){
     SDL_FreeSurface(image);
