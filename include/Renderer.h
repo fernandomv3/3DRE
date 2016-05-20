@@ -33,6 +33,7 @@ private:
   int width;
 public:
   Renderer(int width,int height);
+  ~Renderer();
   Renderer& setTime(float ms);
   Renderer& render(const Scene& scene,Camera& camera);
   Vao& initGeometryBuffers(const Geometry& geom);

@@ -6,28 +6,42 @@ Renderer::Renderer(int width, int height){
   this->width = width;
 }
 
+Renderer::~Renderer(){
+  for(auto v : this->vao){
+    for(auto vbo : v.second.vbo){
+      glDeleteBuffers(1,&(vbo.second.buffer));
+    }
+    glDeleteVertexArrays(1,&(v.second.vao));
+  }
+  for(auto p : this->programs){
+    glDeleteProgram(p.second.getProgram());
+  }
+}
+
 Vao& Renderer::initGeometryBuffers(const Geometry& geom){
   auto &bufferObj = this->vao[geom.getUUID()];
   if (bufferObj.vao == 0) glGenVertexArrays(1,&bufferObj.vao);
-  auto geomAttr =geom.getAttributes();
-  for(auto attr : geomAttr){
-    std::string name = std::get<0>(attr);
-    std::type_index t = std::get<4>(attr);
-    int elementSize = 0;
-    if (t == std::type_index(typeid(float))){
-      elementSize = sizeof(GLfloat);
-      bufferObj.vbo[name].type = GL_FLOAT;
-    }else if(t == std::type_index(typeid(ushort))){
-      elementSize = sizeof(GLushort);
-      bufferObj.vbo[name].type =GL_UNSIGNED_SHORT;
+  if(bufferObj.vbo.empty()){
+    auto geomAttr =geom.getAttributes();
+    for(auto attr : geomAttr){
+      std::string name = std::get<0>(attr);
+      std::type_index t = std::get<4>(attr);
+      int elementSize = 0;
+      if (t == std::type_index(typeid(float))){
+        elementSize = sizeof(GLfloat);
+        bufferObj.vbo[name].type = GL_FLOAT;
+      }else if(t == std::type_index(typeid(ushort))){
+        elementSize = sizeof(GLushort);
+        bufferObj.vbo[name].type =GL_UNSIGNED_SHORT;
+      }
+      uint buf = makeBuffer(
+        std::get<0>(attr) == "index" ? GL_ELEMENT_ARRAY_BUFFER : GL_ARRAY_BUFFER,
+        std::get<1>(attr),
+        std::get<2>(attr) * elementSize
+      );
+      bufferObj.vbo[name].numComponents = std::get<3>(attr);
+      bufferObj.vbo[name].buffer = buf;
     }
-    uint buf = makeBuffer(
-      std::get<0>(attr) == "index" ? GL_ELEMENT_ARRAY_BUFFER : GL_ARRAY_BUFFER,
-      std::get<1>(attr),
-      std::get<2>(attr) * elementSize
-    );
-    bufferObj.vbo[name].numComponents = std::get<3>(attr);
-    bufferObj.vbo[name].buffer = buf;
   }
   return bufferObj;
 }
