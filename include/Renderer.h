@@ -43,6 +43,7 @@ public:
   Renderer& setUpObjectUniforms(std::unordered_map<std::string,int>& uniforms,Object3D& obj);
   Renderer& setUpMaterialUniforms(std::unordered_map<std::string,int>& uniforms,Material& mat);
   Renderer& setUpGlobalUniforms(std::unordered_map<std::string,int>& uniforms);
+  Renderer& drawGeometry(const Geometry& geom, Vao& vao);
 };
 
 uint makeBuffer(GLenum target, const void* data, int size, GLenum usage = GL_STATIC_DRAW);

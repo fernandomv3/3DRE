@@ -162,6 +162,26 @@ Renderer& Renderer::setUpGlobalUniforms(std::unordered_map<std::string,int>& uni
   return *this;
 }
 
+Renderer& Renderer::drawGeometry(const Geometry& geom, Vao& vao){
+  if (!geom.getElements().empty()){
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,vao.vbo["index"].buffer);
+    glDrawElements(
+      GL_TRIANGLES,
+      geom.getElements().size(),
+      GL_UNSIGNED_SHORT,
+      (void*)0
+    );
+  }else{
+    glBindBuffer(GL_ARRAY_BUFFER,vao.vbo["vPosition"].buffer);
+    int numVertices = geom.getVertices().size() / 3;
+    glDrawArrays(
+      GL_TRIANGLES,
+      0,
+      numVertices
+    );
+  }
+  return *this;
+}
 
 Renderer& Renderer::render(const Scene& scene, Camera& cam){
   cam.updateWorldMatrix();
@@ -189,13 +209,8 @@ Renderer& Renderer::render(const Scene& scene, Camera& cam){
 
     setUpGlobalUniforms(uniforms);
 
-    glBindBuffer(GL_ARRAY_BUFFER,bufferObj.vbo["vPosition"].buffer);
-    int numVertices = geom->getVertices().size() / 3;
-    glDrawArrays(
-      GL_TRIANGLES,
-      0,
-      numVertices
-    );
+    drawGeometry(*geom,bufferObj);
+
     glBindVertexArray(0);
   }
 
