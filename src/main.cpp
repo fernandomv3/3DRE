@@ -86,6 +86,12 @@ void initializeContext(){
   }
 }
 
+void cleanUp(){
+  SDL_GL_DeleteContext(context);
+  SDL_DestroyWindow(window);
+  SDL_Quit();
+}
+
 int main(int argc, char** argv){
 
   initializeContext();
@@ -124,6 +130,6 @@ int main(int argc, char** argv){
     renderer.render(scene,cam);
     SDL_GL_SwapWindow(window);
   }
-
+  cleanUp();
   return 0;
 }
