@@ -107,12 +107,14 @@ int GLProgram::makeProgram(){
     std::cerr << ilog << std::endl;
     glDeleteProgram(this->program);
     for( auto shader : this->shaders){
-     glDeleteShader(shader.shaderObject);
+      glDetachShader(this->program,shader.shaderObject);
+      glDeleteShader(shader.shaderObject);
     }
     return 0;
   }
   for( auto shader : this->shaders){
    glDetachShader(this->program,shader.shaderObject);
+   glDeleteShader(shader.shaderObject);
   }
   return this->program;
 }
