@@ -64,6 +64,22 @@ GLProgram& Renderer::initProgram(const Material& mat, const Geometry& geom){
   return program;
 }
 
+std::unordered_map<std::string,int>& Renderer::initTextures(const Material& mat){
+  auto &program = this->programs[mat.getUUID()];
+  auto& texUnits = program.getTexUnits();
+  if(texUnits.empty()){  
+    auto tex = mat.getTextures();
+    for(auto t : tex){
+      auto& texObj = this->textures[t.second->getUUID()];
+      if(t.second->getSourceFile() != "") t.second->loadFile();
+      texObj.texture = makeTexture(*(t.second));
+      texObj.sampler = makeSampler(*(t.second));
+      texUnits[t.first] = program.getFreeTextureUnit();
+    }
+  }
+  return texUnits;
+}
+
 Renderer& Renderer::setUpVertexAttributes(GLProgram& prog, Vao& vao){
   if(!(vao.initialized)){
     for(auto vbo : vao.vbo){
@@ -100,6 +116,7 @@ std::unordered_map<std::string,int>& Renderer::getUniformLocations(GLProgram& pr
     uniforms["material.diffuse"] = glGetUniformLocation(program,"material.diffuse");
     uniforms["material.specular"] = glGetUniformLocation(program,"material.specular");
     uniforms["material.shininess"] = glGetUniformLocation(program,"material.shininess");
+    uniforms["colorMap"] = glGetUniformLocation(program,"colorMap");
   }
   return uniforms;
 }
@@ -176,6 +193,15 @@ Renderer& Renderer::setUpGlobalUniforms(std::unordered_map<std::string,int>& uni
   return *this;
 }
 
+  Renderer& Renderer::setUpTextureUniforms(std::unordered_map<std::string,int>& uniforms,Material& mat,std::unordered_map<std::string,int>& texUnits){
+    auto& texObj = textures[mat.getColorMap()->getUUID()];
+    glUniform1i(uniforms["colorMap"],texUnits["colorMap"]);
+    glActiveTexture(GL_TEXTURE0 + texUnits["colorMap"]);
+    glBindTexture(GL_TEXTURE_2D,texObj.texture);
+    glBindSampler(texUnits["colorMap"],texObj.sampler);
+    return *this;
+  }
+
 Renderer& Renderer::drawGeometry(const Geometry& geom, Vao& vao){
   if (!geom.getElements().empty()){
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,vao.vbo["index"].buffer);
@@ -207,7 +233,10 @@ Renderer& Renderer::render(const Scene& scene, Camera& cam){
     auto& bufferObj =  initGeometryBuffers(*geom);
 
     auto& program = initProgram(*mat,*geom);
-    auto &uniforms = getUniformLocations(program,scene,cam,*obj,*geom,*mat);
+
+    auto& texUnits = initTextures(*mat);
+
+    auto& uniforms = getUniformLocations(program,scene,cam,*obj,*geom,*mat);
 
     glUseProgram(program.getProgram());
 
@@ -220,6 +249,8 @@ Renderer& Renderer::render(const Scene& scene, Camera& cam){
     setUpObjectUniforms(uniforms,*obj);
 
     setUpMaterialUniforms(uniforms,*mat);
+
+    setUpTextureUniforms(uniforms,*mat, texUnits);
 
     setUpGlobalUniforms(uniforms);
 
@@ -242,4 +273,37 @@ uint makeBuffer(GLenum target, const void* data, int size, GLenum usage){
   glBindBuffer(target,buf);
   glBufferData(target,size,data,usage);
   return buf;
+}
+
+uint makeTexture(const Texture& texture){
+  uint tex;
+  uint target = texture.getDimensions() == 2 ? GL_TEXTURE_2D : GL_TEXTURE_3D;
+  uint format = texture.getAlpha() ? GL_RGBA : GL_RGB;
+  uint innerFormat = texture.getGamma() ? GL_SRGB8 : GL_RGB8;
+  uint type = texture.getType() == std::type_index(typeid(unsigned char)) ? GL_UNSIGNED_BYTE : GL_FLOAT; 
+  
+  glGenTextures(1,(GLuint*)&tex);
+  glBindTexture(target,tex);
+  glTexImage2D(
+    target, 0, innerFormat,
+    texture.getWidth(), texture.getHeight(), 0,
+    format, type, texture.getImage()
+  );
+  glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(target, GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
+  glTexParameteri(target, GL_TEXTURE_WRAP_T,GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 3);
+  return tex;
+}
+
+uint makeSampler(const Texture& texture){
+  uint sampler;
+  glGenSamplers(1,&sampler);
+  glSamplerParameteri(sampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glSamplerParameteri(sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glSamplerParameteri(sampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glSamplerParameteri(sampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  return sampler;
 }
