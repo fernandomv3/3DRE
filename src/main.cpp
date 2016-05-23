@@ -1,4 +1,7 @@
+#define NO_SDL_GLEXT
 #include <SDL2/SDL.h>
+#include <GL/glew.h>
+#include <SDL2/SDL_opengl.h>
 #include <iostream>
 #include <iomanip>
 #include <memory>
@@ -32,7 +35,7 @@ void initializeContext(){
   }
   else{
     SDL_GL_SetAttribute( SDL_GL_CONTEXT_MAJOR_VERSION, 3 );
-    SDL_GL_SetAttribute( SDL_GL_CONTEXT_MINOR_VERSION, 2 );
+    SDL_GL_SetAttribute( SDL_GL_CONTEXT_MINOR_VERSION, 3 );
     SDL_GL_SetAttribute( SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE );
     SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
     SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 4);
@@ -105,6 +108,8 @@ int main(int argc, char** argv){
 
   auto geom = std::make_shared<Geometry>(quadGeometry());
   auto mat = std::make_shared<Material>(Material(Vec4(1.0,0.0,0.0,0.0)));
+  auto tex = std::make_shared<Texture>(Texture("checkers.png"));
+  mat->setColorMap(tex);
   auto obj = std::make_shared<Mesh>(Mesh(geom,mat));
   auto obj2 = std::make_shared<Mesh>(Mesh(geom,mat));
   auto parentObj = std::make_shared<Object3D>(Object3D());
