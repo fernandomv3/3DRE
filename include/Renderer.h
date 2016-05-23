@@ -7,6 +7,7 @@
 #include "GLProgram.h"
 
 #include <unordered_map>
+#include <typeindex>
 #include <string>
 #include <memory>
 
@@ -39,6 +40,55 @@ private:
   float time;
   int height;
   int width;
+
+  std::unordered_map<std::type_index, uint> GLType{
+    {std::type_index(typeid(unsigned char)), GL_UNSIGNED_BYTE},
+    {std::type_index(typeid(char)), GL_BYTE},
+    {std::type_index(typeid(unsigned short)), GL_UNSIGNED_SHORT},
+    {std::type_index(typeid(short)), GL_SHORT},
+    {std::type_index(typeid(uint)), GL_UNSIGNED_INT},
+    {std::type_index(typeid(int)), GL_INT},
+    {std::type_index(typeid(float)), GL_FLOAT}
+  };
+  std::unordered_map<std::string, uint> GLTextureTarget{
+    {"2D",GL_TEXTURE_2D},
+    {"CUBE+X",GL_TEXTURE_CUBE_MAP_POSITIVE_X},
+    {"CUBE-X",GL_TEXTURE_CUBE_MAP_NEGATIVE_X},
+    {"CUBE+Y",GL_TEXTURE_CUBE_MAP_POSITIVE_Y},
+    {"CUBE-Y",GL_TEXTURE_CUBE_MAP_NEGATIVE_Y},
+    {"CUBE+Z",GL_TEXTURE_CUBE_MAP_POSITIVE_Z},
+    {"CUBE-Z",GL_TEXTURE_CUBE_MAP_NEGATIVE_Z}
+  };
+  std::unordered_map<std::string, uint> GLFormat{
+    {"R",GL_RED},
+    {"RG",GL_RG},
+    {"RGB",GL_RGB},
+    {"BGR",GL_BGR},
+    {"RGBA",GL_RGBA},
+    {"BGRA",GL_BGRA},
+    {"intR",GL_RED_INTEGER},
+    {"intRG",GL_RG_INTEGER},
+    {"intRGB",GL_RGB_INTEGER},
+    {"intBGR",GL_BGR_INTEGER},
+    {"intRGBA",GL_RGBA_INTEGER},
+    {"intBGRA",GL_BGRA_INTEGER},
+    {"depth",GL_DEPTH_COMPONENT},
+    {"depth_stencil",GL_DEPTH_STENCIL}
+  };
+  std::unordered_map<std::string, uint> GLInnerFormat{
+    {"depth",GL_DEPTH_COMPONENT},
+    {"depth_stencil",GL_DEPTH_STENCIL},
+    {"R",GL_RED},
+    {"RG",GL_RG},
+    {"RGB",GL_RGB},
+    {"RGBA",GL_RGBA},
+    {"R8",GL_R8},
+    {"RG8",GL_RG8},
+    {"RGB8",GL_RGB8},
+    {"RGBA8",GL_RGBA8},
+    {"SRGB8",GL_SRGB8},
+    {"SRGBA8",GL_SRGB8_ALPHA8}
+  };
 public:
   Renderer(int width,int height);
   ~Renderer();
@@ -55,9 +105,9 @@ public:
   Renderer& setUpGlobalUniforms(std::unordered_map<std::string,int>& uniforms);
   Renderer& setUpTextureUniforms(std::unordered_map<std::string,int>& uniforms,Material& mat,std::unordered_map<std::string,int>& texUnits);
   Renderer& drawGeometry(const Geometry& geom, Vao& vao);
+  uint makeTexture(const Texture& texture);
+  uint makeBuffer(GLenum target, const void* data, int size, GLenum usage = GL_STATIC_DRAW);
+  uint makeSampler(const Texture& texture);
 };
 
-uint makeBuffer(GLenum target, const void* data, int size, GLenum usage = GL_STATIC_DRAW);
-uint makeTexture(const Texture& texture);
-uint makeSampler(const Texture& texture);
 #endif

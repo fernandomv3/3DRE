@@ -267,7 +267,7 @@ Renderer& Renderer::setTime(float ms){
   return *this;
 }
 
-uint makeBuffer(GLenum target, const void* data, int size, GLenum usage){
+uint Renderer::makeBuffer(GLenum target, const void* data, int size, GLenum usage){
   uint buf;
   glGenBuffers(1,&buf);
   glBindBuffer(target,buf);
@@ -275,19 +275,18 @@ uint makeBuffer(GLenum target, const void* data, int size, GLenum usage){
   return buf;
 }
 
-uint makeTexture(const Texture& texture){
+uint Renderer::makeTexture(const Texture& texture){
   uint tex;
   uint target = texture.getDimensions() == 2 ? GL_TEXTURE_2D : GL_TEXTURE_3D;
   uint format = texture.getAlpha() ? GL_RGBA : GL_RGB;
   uint innerFormat = texture.getGamma() ? GL_SRGB8 : GL_RGB8;
-  uint type = texture.getType() == std::type_index(typeid(unsigned char)) ? GL_UNSIGNED_BYTE : GL_FLOAT; 
   
   glGenTextures(1,(GLuint*)&tex);
   glBindTexture(target,tex);
   glTexImage2D(
     target, 0, innerFormat,
     texture.getWidth(), texture.getHeight(), 0,
-    format, type, texture.getImage()
+    format, this->GLType[texture.getType()], texture.getImage()
   );
   glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -298,7 +297,7 @@ uint makeTexture(const Texture& texture){
   return tex;
 }
 
-uint makeSampler(const Texture& texture){
+uint Renderer::makeSampler(const Texture& texture){
   uint sampler;
   glGenSamplers(1,&sampler);
   glSamplerParameteri(sampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
