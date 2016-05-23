@@ -75,9 +75,18 @@ Geometry quadGeometry(int size){
     0.0, 0.0, -1.0,
     0.0, 0.0, -1.0
   };
+  float texCoords[12] ={
+    1.0,1.0,
+    1.0,0.0,
+    0.0,0.0,
+    0.0,1.0,
+    1.0,1.0,
+    0.0,0.0
+  };
 
   Geometry geom = Geometry();
   geom.setVertices(std::vector<float>(vertices,vertices+18));
   geom.setNormals(std::vector<float>(normals,normals+18));
+  geom.setTexCoords(std::vector<float>(texCoords,texCoords+12));
   return geom;
 }
