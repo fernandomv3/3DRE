@@ -51,32 +51,22 @@ std::vector< std::pair <std::string,std::string> > Material::getShaders() const{
   vec.push_back(std::make_pair("vertexFile",vf));
   std::string ff = "fragment.glsl";
   vec.push_back(std::make_pair("fragmentFile",ff));
-  /*
-  std::string v = 
-  "#version 330\n"
-  ""
-  "uniform mat4 worldMatrix;"
-  "uniform mat4 projectionMatrix;"
-  "uniform mat4 modelMatrix;"
-  "layout(location = 0) in vec3 vPosition;"
-  ""
-  "void main(){"
-  "gl_Position =  projectionMatrix * worldMatrix * modelMatrix *vec4(vPosition,1.0);"
-  "}";
-  vec.push_back(std::make_pair("vertex",v));
-
-  std::string f =
-  "#version 330\n"
-  ""
-  "layout(location = 0) out vec4 color;"
-  "uniform float gamma;"
-  ""
-  "void main(){"
-  "  float x = gl_FragCoord.x/800.0;"
-  "  float y = gl_FragCoord.y/600.0;"
-  "  color = pow(vec4(1-x,1-y,(x+y)/2,1.0),vec4(gamma,gamma,gamma,1.0));"
-  "}";
-  vec.push_back(std::make_pair("fragment",f));*/
-
   return vec;
+}
+
+std::unordered_map< std::string,std::shared_ptr<Texture> > Material::getTextures() const{
+  auto result = std::unordered_map< std::string,std::shared_ptr<Texture> >();
+  if(colorMap != nullptr){
+    colorMap->loadFile();
+    result["colorMap"] = colorMap;
+  }
+  if(normalMap != nullptr){
+    normalMap->loadFile();
+    result["normalMap"] = normalMap;
+  }
+  if(specularMap != nullptr){
+    specularMap->loadFile();
+    result["specularMap"] = specularMap;
+  }
+  return result;
 }

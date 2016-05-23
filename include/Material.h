@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 #include <utility>
+#include <unordered_map>
 
 class Material{
 private:
@@ -35,6 +36,7 @@ public:
   std::shared_ptr<Texture> getNormalMap()const;
   std::shared_ptr<Texture> getSpecularMap()const;
   virtual std::vector< std::pair<std::string,std::string> > getShaders() const;
+  virtual std::unordered_map< std::string,std::shared_ptr<Texture> > getTextures() const;
 
 };
 
