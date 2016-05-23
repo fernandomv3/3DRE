@@ -22,7 +22,7 @@ BINDIR = bin
 CC = g++
 DEBUG = -g -Wall
 IFLAGS = -I $(INCDIR) 
-SDLFLAGS = -lSDL2 
+SDLFLAGS = -lSDL2 -lSDL2_image
 CFLAGS = -c $(DEBUG) $(IFLAGS) -std=c++11
 GLEWFLAGS = -lGLEW
 OPENGLFLAGS = -lGL
