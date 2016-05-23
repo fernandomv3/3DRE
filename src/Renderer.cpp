@@ -25,13 +25,13 @@ Vao& Renderer::initGeometryBuffers(const Geometry& geom){
     auto geomAttr =geom.getAttributes();
     for(auto attr : geomAttr){
       std::string name = std::get<0>(attr);
-      bufferObj.vbo[name].type = this->GLType[std::get<4>(attr)];
       uint buf = makeBuffer(
-        std::get<0>(attr) == "index" ? GL_ELEMENT_ARRAY_BUFFER : GL_ARRAY_BUFFER,
+        name == "index" ? GL_ELEMENT_ARRAY_BUFFER : GL_ARRAY_BUFFER,
         std::get<1>(attr),
         std::get<2>(attr)
       );
       bufferObj.vbo[name].numComponents = std::get<3>(attr);
+      bufferObj.vbo[name].type = this->GLType[std::get<4>(attr)];
       bufferObj.vbo[name].buffer = buf;
     }
   }
