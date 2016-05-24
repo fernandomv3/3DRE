@@ -96,22 +96,20 @@ Renderer& Renderer::setUpVertexAttributes(GLProgram& prog, Vao& vao){
   return *this;
 }
 
-std::unordered_map<std::string,int>& Renderer::getUniformLocations(GLProgram& prog,const Scene& scene,const Camera& cam,Object3D& obj,Geometry& geom,Material& mat){
+std::unordered_map<std::string,int>& Renderer::getUniformLocations(GLProgram& prog,const Scene& scene,Camera& cam,Object3D& obj,Geometry& geom,Material& mat){
   int program = prog.getProgram();
   auto& uniforms = prog.getUniforms();
   if(uniforms.empty()){
-    uniforms["worldMatrix"] = glGetUniformLocation(program,"worldMatrix");
-    uniforms["projectionMatrix"] = glGetUniformLocation(program,"projectionMatrix");
-    uniforms["modelMatrix"] = glGetUniformLocation(program,"modelMatrix");
-    uniforms["normalModelMatrix"] = glGetUniformLocation(program,"normalModelMatrix");
-    uniforms["gamma"] = glGetUniformLocation(program,"gamma");
-    uniforms["time"] = glGetUniformLocation(program,"time");
-    uniforms["screenWidth"] = glGetUniformLocation(program,"screenWidth");
-    uniforms["screenHeight"] = glGetUniformLocation(program,"screenHeight");
-    uniforms["material.diffuse"] = glGetUniformLocation(program,"material.diffuse");
-    uniforms["material.specular"] = glGetUniformLocation(program,"material.specular");
-    uniforms["material.shininess"] = glGetUniformLocation(program,"material.shininess");
-    uniforms["colorMap"] = glGetUniformLocation(program,"colorMap");
+    auto camUniformData = cam.getUniforms();
+    auto objUniformData = obj.getUniforms();
+    auto matUniformData = mat.getUniforms();
+    auto globalUniformData = this->getUniforms();
+    auto tex = mat.getTextures();
+    for(auto u : camUniformData) uniforms[std::get<0>(u)] = glGetUniformLocation(program,std::get<0>(u).c_str());
+    for(auto u : objUniformData) uniforms[std::get<0>(u)] = glGetUniformLocation(program,std::get<0>(u).c_str());
+    for(auto u : matUniformData) uniforms[std::get<0>(u)] = glGetUniformLocation(program,std::get<0>(u).c_str());
+    for(auto u : globalUniformData) uniforms[std::get<0>(u)] = glGetUniformLocation(program,std::get<0>(u).c_str());
+    for(auto t : tex) uniforms[t.first] = glGetUniformLocation(program,t.first.c_str());
   }
   return uniforms;
 }
