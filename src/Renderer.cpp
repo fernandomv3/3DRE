@@ -7,14 +7,17 @@ Renderer::Renderer(int width, int height){
 }
 
 Renderer::~Renderer(){
-  for(auto v : this->vao){
+  for(auto& v : this->vao){
     for(auto vbo : v.second.vbo){
       glDeleteBuffers(1,&(vbo.second.buffer));
     }
     glDeleteVertexArrays(1,&(v.second.vao));
   }
-  for(auto p : this->programs){
+  for(auto& p : this->programs){
     glDeleteProgram(p.second.getProgram());
+  }
+  for(auto& t : this->textures){
+    glDeleteTextures(1,&(t.second.texture));
   }
 }
 
