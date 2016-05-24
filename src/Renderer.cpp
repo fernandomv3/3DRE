@@ -189,11 +189,14 @@ Renderer& Renderer::setUpGlobalUniforms(std::unordered_map<std::string,int>& uni
 }
 
   Renderer& Renderer::setUpTextureUniforms(std::unordered_map<std::string,int>& uniforms,Material& mat,std::unordered_map<std::string,int>& texUnits){
-    auto& texObj = textures[mat.getColorMap()->getUUID()];
-    glUniform1i(uniforms["colorMap"],texUnits["colorMap"]);
-    glActiveTexture(GL_TEXTURE0 + texUnits["colorMap"]);
-    glBindTexture(GL_TEXTURE_2D,texObj.texture);
-    glBindSampler(texUnits["colorMap"],texObj.sampler);
+    auto matTextures = mat.getTextures();
+    for(auto& texture : matTextures){
+      auto& texObj = textures[texture.second->getUUID()];
+      glUniform1i(uniforms[texture.first],texUnits[texture.first]);
+      glActiveTexture(GL_TEXTURE0 + texUnits[texture.first]);
+      glBindTexture(GLTextureTarget[texture.second->getTarget()],texObj.texture);
+      glBindSampler(texUnits[texture.first],texObj.sampler);
+    }
     return *this;
   }
 
