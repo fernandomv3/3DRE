@@ -116,75 +116,35 @@ std::unordered_map<std::string,int>& Renderer::getUniformLocations(GLProgram& pr
   return uniforms;
 }
 
-Renderer& Renderer::setUpCameraUniforms(std::unordered_map<std::string,int>& uniforms,const Camera& cam){
-  glUniformMatrix4fv(
-    uniforms["worldMatrix"],
-    1,
-    GL_FALSE,
-    cam.getWorldMatrix().getElements().data()
-  );
-  glUniformMatrix4fv(
-    uniforms["projectionMatrix"],
-    1,
-    GL_FALSE,
-    cam.getProjectionMatrix().getElements().data()
-  );
-  glUniform1f(
-    uniforms["gamma"],
-    1.0/cam.getGamma()
-  );
+Renderer& Renderer::setUpCameraUniforms(std::unordered_map<std::string,int>& uniforms,Camera& cam){
+  auto uniformData = cam.getUniforms();
+  for(auto& u : uniformData){
+    updateUniform(uniforms[std::get<0>(u)],std::get<2>(u),std::get<1>(u),std::get<3>(u));
+  }
   return *this;
 }
 
 Renderer& Renderer::setUpObjectUniforms(std::unordered_map<std::string,int>& uniforms,Object3D& obj){
-  obj.updateModelMatrix();
-  obj.updateNormalModelMatrix();
-  glUniformMatrix4fv(
-    uniforms["modelMatrix"],
-    1,
-    GL_FALSE,
-    obj.getModelMatrix().getElements().data()
-  );
-  glUniformMatrix4fv(
-    uniforms["normalModelMatrix"],
-    1,
-    GL_FALSE,
-    obj.getNormalModelMatrix().getElements().data()
-  );
+  auto uniformData = obj.getUniforms();
+  for(auto& u : uniformData){
+    updateUniform(uniforms[std::get<0>(u)],std::get<2>(u),std::get<1>(u),std::get<3>(u));
+  }
   return *this;
 }
 
 Renderer& Renderer::setUpMaterialUniforms(std::unordered_map<std::string,int>& uniforms,Material& mat){
-  glUniform4fv(
-    uniforms["material.diffuse"],
-    1,
-    mat.getDiffuseColor().getElements().data()
-  );
-  glUniform4fv(
-    uniforms["material.specular"],
-    1,
-    mat.getSpecularColor().getElements().data()
-  );
-  glUniform1f(
-    uniforms["material.shininess"],
-    mat.getShininess()
-  );
+  auto uniformData = mat.getUniforms();
+  for(auto& u : uniformData){
+    updateUniform(uniforms[std::get<0>(u)],std::get<2>(u),std::get<1>(u),std::get<3>(u));
+  }
   return *this;
 }
 
 Renderer& Renderer::setUpGlobalUniforms(std::unordered_map<std::string,int>& uniforms){
-  glUniform1f(
-    uniforms["time"],
-    this->time
-  );
-  glUniform1i(
-    uniforms["screenWidth"],
-    this->width
-  );
-  glUniform1i(
-    uniforms["screenHeight"],
-    this->height
-  );
+  auto uniformData = getUniforms();
+  for(auto& u : uniformData){
+    updateUniform(uniforms[std::get<0>(u)],std::get<2>(u),std::get<1>(u),std::get<3>(u));
+  }
   return *this;
 }
 
@@ -244,6 +204,8 @@ Renderer& Renderer::render(const Scene& scene, Camera& cam){
 
     setUpCameraUniforms(uniforms,cam);
 
+    obj->updateModelMatrix();
+    obj->updateNormalModelMatrix();
     setUpObjectUniforms(uniforms,*obj);
 
     setUpMaterialUniforms(uniforms,*mat);
@@ -303,4 +265,61 @@ uint Renderer::makeSampler(const Texture& texture){
   glSamplerParameteri(sampler, GL_TEXTURE_WRAP_S, this->GLWrapping[std::get<0>(texture.getWrapping())]);
   glSamplerParameteri(sampler, GL_TEXTURE_WRAP_T, this->GLWrapping[std::get<1>(texture.getWrapping())]);
   return sampler;
+}
+
+Renderer& Renderer::updateUniform(int location,int count, const std::string type, void* data){
+  if(type.length() == 4){
+    if(type == "m2fv") {glUniformMatrix2fv(location,count,GL_FALSE,static_cast<float*>(data)); return *this;}
+    if(type == "m3fv") {glUniformMatrix3fv(location,count,GL_FALSE,static_cast<float*>(data)); return *this;}
+    if(type == "m4fv") {glUniformMatrix4fv(location,count,GL_FALSE,static_cast<float*>(data)); return *this;}
+  }
+  else if(type.length() == 2){
+    if(type == "1f") {glUniform1f(location,static_cast<float*>(data)[0]); return *this;}
+    if(type == "2f") {glUniform2f(location,static_cast<float*>(data)[0],static_cast<float*>(data)[1]); return *this;}
+    if(type == "3f") {glUniform3f(location,static_cast<float*>(data)[0],static_cast<float*>(data)[1],static_cast<float*>(data)[2]); return *this;}
+    if(type == "4f") {glUniform4f(location,static_cast<float*>(data)[0],static_cast<float*>(data)[1],static_cast<float*>(data)[2],static_cast<float*>(data)[3]); return *this;}
+    
+    if(type == "1i") {glUniform1i(location,static_cast<int*>(data)[0]); return *this;}
+    if(type == "2i") {glUniform2i(location,static_cast<int*>(data)[0],static_cast<int*>(data)[1]); return *this;}
+    if(type == "3i") {glUniform3i(location,static_cast<int*>(data)[0],static_cast<int*>(data)[1],static_cast<int*>(data)[2]); return *this;}
+    if(type == "4i") {glUniform4i(location,static_cast<int*>(data)[0],static_cast<int*>(data)[1],static_cast<int*>(data)[2],static_cast<int*>(data)[3]); return *this;}
+    
+    if(type == "1u") {glUniform1ui(location,static_cast<uint*>(data)[0]); return *this;}
+    if(type == "2u") {glUniform2ui(location,static_cast<uint*>(data)[0],static_cast<uint*>(data)[1]); return *this;}
+    if(type == "3u") {glUniform3ui(location,static_cast<uint*>(data)[0],static_cast<uint*>(data)[1],static_cast<uint*>(data)[2]); return *this;}
+    if(type == "4u") {glUniform4ui(location,static_cast<uint*>(data)[0],static_cast<uint*>(data)[1],static_cast<uint*>(data)[2],static_cast<uint*>(data)[3]); return *this;}
+  }
+  else if (type.length() == 3){
+    if(type == "1fv") {glUniform1fv(location,count,static_cast<float*>(data)); return *this;}
+    if(type == "2fv") {glUniform2fv(location,count,static_cast<float*>(data)); return *this;}
+    if(type == "3fv") {glUniform3fv(location,count,static_cast<float*>(data)); return *this;}
+    if(type == "4fv") {glUniform4fv(location,count,static_cast<float*>(data)); return *this;}
+    
+    if(type == "1iv") {glUniform1iv(location,count,static_cast<int*>(data)); return *this;}
+    if(type == "2iv") {glUniform2iv(location,count,static_cast<int*>(data)); return *this;}
+    if(type == "3iv") {glUniform3iv(location,count,static_cast<int*>(data)); return *this;}
+    if(type == "4iv") {glUniform4iv(location,count,static_cast<int*>(data)); return *this;}
+    
+    if(type == "1uv") {glUniform1uiv(location,count,static_cast<uint*>(data)); return *this;}
+    if(type == "2uv") {glUniform2uiv(location,count,static_cast<uint*>(data)); return *this;}
+    if(type == "3uv") {glUniform3uiv(location,count,static_cast<uint*>(data)); return *this;}
+    if(type == "4uv") {glUniform4uiv(location,count,static_cast<uint*>(data)); return *this;}
+  }
+  else{
+    if(type == "m3x2fv") {glUniformMatrix3x2fv(location,count,GL_FALSE,static_cast<float*>(data)); return *this;}
+    if(type == "m2x3fv") {glUniformMatrix2x3fv(location,count,GL_FALSE,static_cast<float*>(data)); return *this;}
+    if(type == "m2x4fv") {glUniformMatrix2x4fv(location,count,GL_FALSE,static_cast<float*>(data)); return *this;}
+    if(type == "m4x2fv") {glUniformMatrix4x2fv(location,count,GL_FALSE,static_cast<float*>(data)); return *this;}
+    if(type == "m3x4fv") {glUniformMatrix3x4fv(location,count,GL_FALSE,static_cast<float*>(data)); return *this;}
+    if(type == "m4x3fv") {glUniformMatrix4x3fv(location,count,GL_FALSE,static_cast<float*>(data)); return *this;}
+  }
+  return *this;
+}
+
+std::vector< std::tuple<std::string,std::string,int,void*> > Renderer::getUniforms(){
+  std::vector< std::tuple<std::string,std::string,int,void*> > res;
+  res.push_back(std::make_tuple("time","1f",1,&time));
+  res.push_back(std::make_tuple("screenWidth","1i",1,&width));
+  res.push_back(std::make_tuple("screenHeight","1i",1,&height));
+  return res;
 }

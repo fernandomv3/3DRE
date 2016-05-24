@@ -107,3 +107,10 @@ Object3D& Object3D::remove(const std::shared_ptr<Object3D> child){
 
 const bool& Object3D::useQuaternions() const{ return rotQuaternions; }
 bool& Object3D::useQuaternions(bool useQuaternions){ return rotQuaternions; }
+
+std::vector< std::tuple<std::string,std::string,int,void*> > Object3D::getUniforms(){
+  std::vector< std::tuple<std::string,std::string,int,void*> > res;
+  res.push_back(std::make_tuple("modelMatrix","m4fv",1,modelMatrix.getElements().data()));
+  res.push_back(std::make_tuple("normalModelMatrix","m4fv",1,normalModelMatrix.getElements().data()));
+  return res;
+}

@@ -70,3 +70,11 @@ std::unordered_map< std::string,std::shared_ptr<Texture> > Material::getTextures
   }
   return result;
 }
+
+std::vector< std::tuple<std::string,std::string,int,void*> > Material::getUniforms(){
+  std::vector< std::tuple<std::string,std::string,int,void*> > res;
+  res.push_back(std::make_tuple("material.diffuse","4fv",1,diffuseColor.getElements().data()));
+  res.push_back(std::make_tuple("material.specular","4fv",1,specularColor.getElements().data()));
+  res.push_back(std::make_tuple("material.specular","1f",1,&shininess));
+  return res;
+}

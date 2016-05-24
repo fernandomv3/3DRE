@@ -113,7 +113,7 @@ public:
   GLProgram& initProgram(const Material& mat, const Geometry& geom);
   std::unordered_map<std::string,int>& initTextures(const Material& mat);
   std::unordered_map<std::string,int>& getUniformLocations(GLProgram& prog,const Scene& scene,const Camera& cam,Object3D& obj,Geometry& geom,Material& mat);
-  Renderer& setUpCameraUniforms(std::unordered_map<std::string,int>& uniforms,const Camera& cam);
+  Renderer& setUpCameraUniforms(std::unordered_map<std::string,int>& uniforms,Camera& cam);
   Renderer& setUpObjectUniforms(std::unordered_map<std::string,int>& uniforms,Object3D& obj);
   Renderer& setUpMaterialUniforms(std::unordered_map<std::string,int>& uniforms,Material& mat);
   Renderer& setUpGlobalUniforms(std::unordered_map<std::string,int>& uniforms);
@@ -122,6 +122,8 @@ public:
   uint makeTexture(const Texture& texture);
   uint makeBuffer(GLenum target, const void* data, int size, GLenum usage = GL_STATIC_DRAW);
   uint makeSampler(const Texture& texture);
+  Renderer& updateUniform(int location,int count,const std::string type, void* data);
+  virtual std::vector< std::tuple<std::string,std::string,int,void*> >getUniforms();
 };
 
 #endif

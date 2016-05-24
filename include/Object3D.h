@@ -43,5 +43,6 @@ public:
   Object3D& remove(const std::shared_ptr<Object3D> child);
   const bool& useQuaternions() const;
   bool& useQuaternions(bool quaternions);
+  virtual std::vector< std::tuple<std::string,std::string,int,void*> >getUniforms();
 };
 #endif
