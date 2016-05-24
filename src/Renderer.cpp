@@ -281,10 +281,11 @@ uint Renderer::makeTexture(const Texture& texture){
   );
   glTexParameteri(target, GL_TEXTURE_MIN_FILTER, this->GLFiltering[texture.getFiltering().second]);
   glTexParameteri(target, GL_TEXTURE_MAG_FILTER, this->GLFiltering[texture.getFiltering().second]);
-  glTexParameteri(target, GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
-  glTexParameteri(target, GL_TEXTURE_WRAP_T,GL_CLAMP_TO_EDGE);
+  glTexParameteri(target, GL_TEXTURE_WRAP_S,this->GLWrapping[std::get<0>(texture.getWrapping())]);
+  glTexParameteri(target, GL_TEXTURE_WRAP_T,this->GLWrapping[std::get<1>(texture.getWrapping())]);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, texture.getNMipmaps());
+  if(texture.getNMipmaps() > 1) glGenerateMipmap(target);
   return tex;
 }
 
@@ -293,7 +294,7 @@ uint Renderer::makeSampler(const Texture& texture){
   glGenSamplers(1,&sampler);
   glSamplerParameteri(sampler, GL_TEXTURE_MAG_FILTER, this->GLFiltering[texture.getFiltering().second]);
   glSamplerParameteri(sampler, GL_TEXTURE_MIN_FILTER, this->GLFiltering[texture.getFiltering().first]);
-  glSamplerParameteri(sampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glSamplerParameteri(sampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  glSamplerParameteri(sampler, GL_TEXTURE_WRAP_S, this->GLWrapping[std::get<0>(texture.getWrapping())]);
+  glSamplerParameteri(sampler, GL_TEXTURE_WRAP_T, this->GLWrapping[std::get<1>(texture.getWrapping())]);
   return sampler;
 }

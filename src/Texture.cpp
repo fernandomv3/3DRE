@@ -10,8 +10,8 @@ Texture::Texture(const std::string& sourceFile){
   this->height = 0;
   this->width = 0;
   this->nMipmaps = 3;
-  this->wrapping = std::make_tuple("clampEdge","clampEdge","");
-  this->filtering =std::make_pair("linear","linear");
+  this->wrapping = std::make_tuple("edge","edge","");
+  this->filtering =std::make_pair("linear_mipmap_linear","linear_mipmap_linear");
   this->target = "2D";
   this->format = "RGB";
   this->innerFormat = "RGB8";

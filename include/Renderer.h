@@ -97,6 +97,12 @@ private:
     {"nearest_mipmap_linear",GL_NEAREST_MIPMAP_LINEAR},
     {"linear_mipmap_nearest",GL_LINEAR_MIPMAP_NEAREST}
   };
+  std::unordered_map<std::string, uint> GLWrapping{
+    {"edge",GL_CLAMP_TO_EDGE},
+    {"border",GL_CLAMP_TO_BORDER},
+    {"mirror",GL_MIRRORED_REPEAT},
+    {"repeat",GL_REPEAT}
+  };
 public:
   Renderer(int width,int height);
   ~Renderer();
