@@ -89,6 +89,14 @@ private:
     {"SRGB8",GL_SRGB8},
     {"SRGBA8",GL_SRGB8_ALPHA8}
   };
+  std::unordered_map<std::string, uint> GLFiltering{
+    {"nearest",GL_NEAREST},
+    {"linear",GL_LINEAR},
+    {"linear_mipmap_linear",GL_LINEAR_MIPMAP_LINEAR},
+    {"nearest_mipmap_nearest",GL_NEAREST_MIPMAP_NEAREST},
+    {"nearest_mipmap_linear",GL_NEAREST_MIPMAP_LINEAR},
+    {"linear_mipmap_nearest",GL_LINEAR_MIPMAP_NEAREST}
+  };
 public:
   Renderer(int width,int height);
   ~Renderer();

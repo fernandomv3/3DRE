@@ -12,37 +12,39 @@ private:
   std::unique_ptr<char[]>image;
   int height;
   int width;
-  bool gamma;
-  bool alpha;
-  int dimensions;
-  std::string wrapping;
-  std::string filtering;
+  int nMipmaps;
+  std::tuple<std::string,std::string,std::string> wrapping;
+  std::pair<std::string,std::string> filtering;
   std::string target;
+  std::string format;
+  std::string innerFormat;
+  bool gamma;
   bool loaded;
-  std::type_index type = std::type_index(typeid(unsigned char));
+  std::type_index type = std::type_index(typeid(unsigned short));
 public:
   Texture(const std::string& sourceFile);
 
   const std::string& getUUID()const;
   const std::string& getSourceFile()const;
   const char* getImage()const;
+  Texture& loadFile();
   int getHeight()const;
   int getWidth()const;
   bool getGamma()const;
-  Texture& setGamma(bool gamma);
-  bool hasAlpha()const;
-  Texture& loadFile();
-  int getDimensions()const;
-  std::string getWrapping()const;
-  std::string getFiltering()const;
+  int getNMipmaps()const;
+  std::tuple<std::string,std::string,std::string> getWrapping()const;
+  std::pair<std::string,std::string> getFiltering()const;
   std::string getTarget()const;
   bool getLoaded()const;
-  bool getAlpha()const;
+  std::string getFormat()const;
   std::type_index getType()const;
-  Texture& setDimensions(int dimensions);
-  Texture& setWrapping(std::string wrapping);
-  Texture& setFiltering(std::string filtering);
+
+  Texture& setNMipmaps(int nMipmaps);
+  Texture& setGamma(bool gamma);
+  Texture& setWrapping(std::tuple<std::string,std::string,std::string> wrapping);
+  Texture& setFiltering(std::pair<std::string,std::string> filtering);
   Texture& setTarget(std::string target);
   Texture& setLoaded(bool loaded);
+  Texture& setFormat(std::string format);
 };
 #endif

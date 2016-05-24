@@ -269,31 +269,30 @@ uint Renderer::makeBuffer(GLenum target, const void* data, int size, GLenum usag
 
 uint Renderer::makeTexture(const Texture& texture){
   uint tex;
-  uint target = texture.getDimensions() == 2 ? GL_TEXTURE_2D : GL_TEXTURE_3D;
-  uint format = texture.getAlpha() ? GL_RGBA : GL_RGB;
-  uint innerFormat = texture.getGamma() ? GL_SRGB8 : GL_RGB8;
+  uint target = this->GLTextureTarget[texture.getTarget()];
+  uint innerFormat = texture.getGamma() ? this->GLInnerFormat["S"+texture.getFormat()+"8"] : this->GLInnerFormat[texture.getFormat()];
   
   glGenTextures(1,(GLuint*)&tex);
   glBindTexture(target,tex);
   glTexImage2D(
     target, 0, innerFormat,
     texture.getWidth(), texture.getHeight(), 0,
-    format, this->GLType[texture.getType()], texture.getImage()
+    this->GLFormat[texture.getFormat()], this->GLType[texture.getType()], texture.getImage()
   );
-  glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(target, GL_TEXTURE_MIN_FILTER, this->GLFiltering[texture.getFiltering().second]);
+  glTexParameteri(target, GL_TEXTURE_MAG_FILTER, this->GLFiltering[texture.getFiltering().second]);
   glTexParameteri(target, GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
   glTexParameteri(target, GL_TEXTURE_WRAP_T,GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 3);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, texture.getNMipmaps());
   return tex;
 }
 
 uint Renderer::makeSampler(const Texture& texture){
   uint sampler;
   glGenSamplers(1,&sampler);
-  glSamplerParameteri(sampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glSamplerParameteri(sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glSamplerParameteri(sampler, GL_TEXTURE_MAG_FILTER, this->GLFiltering[texture.getFiltering().second]);
+  glSamplerParameteri(sampler, GL_TEXTURE_MIN_FILTER, this->GLFiltering[texture.getFiltering().first]);
   glSamplerParameteri(sampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glSamplerParameteri(sampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   return sampler;

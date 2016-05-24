@@ -5,15 +5,17 @@
 
 Texture::Texture(const std::string& sourceFile){
   this->uuid = generateUUID();
-  this->gamma = true;
-  this->image= std::unique_ptr<char[]>();
-  this->height= 0;
-  this->width= 0;
   this->sourceFile = sourceFile;
-  this->alpha = true;
-  this->dimensions= 2;
-  this->wrapping= "repeat";
-  this->filtering= "mipmap_linear";
+  this->image = std::unique_ptr<char[]>();
+  this->height = 0;
+  this->width = 0;
+  this->nMipmaps = 3;
+  this->wrapping = std::make_tuple("clampEdge","clampEdge","");
+  this->filtering =std::make_pair("linear","linear");
+  this->target = "2D";
+  this->format = "RGB";
+  this->innerFormat = "RGB8";
+  this->gamma = true;
   this->loaded = false;
   this->type = std::type_index(typeid(unsigned char));
 }
@@ -27,17 +29,14 @@ Texture& Texture::setGamma(bool gamma){
   this->gamma = gamma;
   return *this;
 }
-bool Texture::hasAlpha()const{
-  return alpha;
-}
 Texture& Texture::loadFile(){
   if(this->loaded)return *this;
   SDL_Surface* image = IMG_Load(this->sourceFile.c_str());
   this->width = image->w;
   this->height = image->h;
 
-  if(image->format->BytesPerPixel == 3) {this->alpha = false;}
-  else if(image->format->BytesPerPixel == 4) {this->alpha = true;}
+  if(image->format->BytesPerPixel == 3) {this->format = "RGB";}
+  else if(image->format->BytesPerPixel == 4) {this->format = "RGBA";}
   char* data = new char[image->w * image->h * image->format->BytesPerPixel];
   memcpy(data,image->pixels,image->w * image->h * image->format->BytesPerPixel);
   this->image = std::unique_ptr<char[]>(data);
@@ -48,31 +47,35 @@ Texture& Texture::loadFile(){
   this->loaded = true;
   return *this;
 }
+int Texture::getNMipmaps()const { return nMipmaps; }
+std::tuple<std::string,std::string,std::string> Texture::getWrapping()const { return wrapping; }
+std::pair<std::string,std::string> Texture::getFiltering()const { return filtering; }
+std::string Texture::getTarget()const { return target; }
+bool Texture::getLoaded()const { return loaded; }
+std::string Texture::getFormat()const { return format; }
+std::type_index Texture::getType()const { return type; }
 
-  int Texture::getDimensions()const{ return dimensions; }
-  std::string Texture::getWrapping()const{ return wrapping; }
-  std::string Texture::getFiltering()const{ return filtering; }
-  std::string Texture::getTarget()const{ return target; }
-  bool Texture::getLoaded()const{ return loaded; }
-  bool Texture::getAlpha()const{ return alpha; };
-  std::type_index Texture::getType()const{ return type; }
-  Texture& Texture::setDimensions(int dimensions){
-    this->dimensions = dimensions;
-    return *this;
-  };
-  Texture& Texture::setWrapping(std::string wrapping){
-    this->wrapping = wrapping;
-    return *this;
-  };
-  Texture& Texture::setFiltering(std::string filtering){
-    this->filtering = filtering;
-    return *this;
-  };
-  Texture& Texture::setTarget(std::string target){
-    this->target = target;
-    return *this;
-  };
-  Texture& Texture::setLoaded(bool loaded){
-    this->loaded = loaded;
-    return *this;
-  };
+Texture& Texture::setNMipmaps(int nMipmaps){
+  this->nMipmaps = nMipmaps;
+  return *this;
+}
+Texture& Texture::setWrapping(std::tuple<std::string,std::string,std::string> wrapping){
+  this->wrapping = wrapping;
+  return *this;
+}
+Texture& Texture::setFiltering(std::pair<std::string,std::string> filtering){
+  this->filtering = filtering;
+  return *this;
+}
+Texture& Texture::setTarget(std::string target){
+  this->target = target;
+  return *this;
+}
+Texture& Texture::setLoaded(bool loaded){
+  this->loaded = loaded;
+  return *this;
+}
+Texture& Texture::setFormat(std::string format){
+  this->format = format;
+  return *this;
+}
