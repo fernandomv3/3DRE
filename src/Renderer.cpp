@@ -96,7 +96,7 @@ Renderer& Renderer::setUpVertexAttributes(GLProgram& prog, Vao& vao){
   return *this;
 }
 
-std::unordered_map<std::string,int>& Renderer::getUniformLocations(GLProgram& prog,const Scene& scene,Camera& cam,Object3D& obj,Geometry& geom,Material& mat){
+std::unordered_map<std::string,int>& Renderer::getUniformLocations(GLProgram& prog,Scene& scene,Camera& cam,Object3D& obj,Geometry& geom,Material& mat){
   int program = prog.getProgram();
   auto& uniforms = prog.getUniforms();
   if(uniforms.empty()){
@@ -104,11 +104,13 @@ std::unordered_map<std::string,int>& Renderer::getUniformLocations(GLProgram& pr
     auto objUniformData = obj.getUniforms();
     auto matUniformData = mat.getUniforms();
     auto globalUniformData = this->getUniforms();
+    auto sceneUniformData = scene.getUniforms();
     auto tex = mat.getTextures();
     for(auto u : camUniformData) uniforms[std::get<0>(u)] = glGetUniformLocation(program,std::get<0>(u).c_str());
     for(auto u : objUniformData) uniforms[std::get<0>(u)] = glGetUniformLocation(program,std::get<0>(u).c_str());
     for(auto u : matUniformData) uniforms[std::get<0>(u)] = glGetUniformLocation(program,std::get<0>(u).c_str());
     for(auto u : globalUniformData) uniforms[std::get<0>(u)] = glGetUniformLocation(program,std::get<0>(u).c_str());
+    for(auto u : sceneUniformData) uniforms[std::get<0>(u)] = glGetUniformLocation(program,std::get<0>(u).c_str());
     for(auto t : tex) uniforms[t.first] = glGetUniformLocation(program,t.first.c_str());
   }
   return uniforms;
@@ -132,6 +134,14 @@ Renderer& Renderer::setUpObjectUniforms(std::unordered_map<std::string,int>& uni
 
 Renderer& Renderer::setUpMaterialUniforms(std::unordered_map<std::string,int>& uniforms,Material& mat){
   auto uniformData = mat.getUniforms();
+  for(auto& u : uniformData){
+    updateUniform(uniforms[std::get<0>(u)],std::get<2>(u),std::get<1>(u),std::get<3>(u));
+  }
+  return *this;
+}
+
+Renderer& Renderer::setUpSceneUniforms(std::unordered_map<std::string,int>& uniforms,Scene& scene){
+  auto uniformData = scene.getUniforms();
   for(auto& u : uniformData){
     updateUniform(uniforms[std::get<0>(u)],std::get<2>(u),std::get<1>(u),std::get<3>(u));
   }
@@ -179,7 +189,7 @@ Renderer& Renderer::drawGeometry(const Geometry& geom, Vao& vao){
   return *this;
 }
 
-Renderer& Renderer::render(const Scene& scene, Camera& cam){
+Renderer& Renderer::render(Scene& scene, Camera& cam){
   cam.updateWorldMatrix();
   for(auto obj : scene.getObjects()){
     auto mesh = std::static_pointer_cast<Mesh>(obj);
@@ -209,6 +219,8 @@ Renderer& Renderer::render(const Scene& scene, Camera& cam){
     setUpMaterialUniforms(uniforms,*mat);
 
     setUpTextureUniforms(uniforms,*mat, texUnits);
+
+    setUpSceneUniforms(uniforms,scene);
 
     setUpGlobalUniforms(uniforms);
 

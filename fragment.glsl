@@ -8,6 +8,7 @@ uniform float time;
 uniform int screenWidth;
 uniform int screenHeight;
 uniform sampler2D colorMap;
+uniform vec4 ambient;
 
 struct Material{
 	vec4 diffuse;
@@ -19,5 +20,5 @@ uniform Material material;
 
 void main(){
   vec4 diffuseColor = texture(colorMap,fUv);
-  color = diffuseColor;
+  color = material.diffuse;
 }

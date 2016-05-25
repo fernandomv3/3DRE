@@ -5,7 +5,7 @@ Vec4::Vec4(float x, float y, float z, float w){
   e[0] = x; e[1]=y; e[2]=z; e[3]=w;
 }
 
-std::array<float,4> Vec4::getElements(){ return this->e; }
+std::array<float,4>& Vec4::getElements(){ return this->e; }
 
 const Vec4& Vec4::operator+() const { return *this; }
 Vec4 Vec4::operator-() const { return Vec4(-e[0], -e[1], -e[2], -e[3]); }

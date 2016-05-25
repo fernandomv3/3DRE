@@ -11,6 +11,7 @@ private:
   std::string uuid;
   std::vector< std::shared_ptr<Object3D> > objects;
   std::vector< std::shared_ptr<Light> > lights;
+  Light ambientLight;
 public:
   Scene();
   std::string getUUID()const;
@@ -20,6 +21,8 @@ public:
   Scene& remove(std::shared_ptr<Light> light);
   Scene& add(std::shared_ptr<Object3D> object);
   Scene& remove(std::shared_ptr<Object3D> object);
+  Light& getAmbientLight();
+  std::vector< std::tuple<std::string,std::string,int,void*> > getUniforms();
 };
 
 #endif

@@ -10,7 +10,7 @@ private:
 public:
   Vec4(float x = 0.0, float y = 0.0, float z = 0.0, float w = 0.0);
 
-  std::array<float,4> getElements();
+  std::array<float,4>& getElements();
 
   const Vec4& operator+() const;
   Vec4 operator-() const;

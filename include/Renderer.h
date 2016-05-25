@@ -107,15 +107,16 @@ public:
   Renderer(int width,int height);
   ~Renderer();
   Renderer& setTime(float ms);
-  Renderer& render(const Scene& scene,Camera& camera);
+  Renderer& render(Scene& scene,Camera& camera);
   Vao& initGeometryBuffers(const Geometry& geom);
   Renderer& setUpVertexAttributes(GLProgram& prog,Vao& vao);
   GLProgram& initProgram(const Material& mat, const Geometry& geom);
   std::unordered_map<std::string,int>& initTextures(const Material& mat);
-  std::unordered_map<std::string,int>& getUniformLocations(GLProgram& prog,const Scene& scene,Camera& cam,Object3D& obj,Geometry& geom,Material& mat);
+  std::unordered_map<std::string,int>& getUniformLocations(GLProgram& prog,Scene& scene,Camera& cam,Object3D& obj,Geometry& geom,Material& mat);
   Renderer& setUpCameraUniforms(std::unordered_map<std::string,int>& uniforms,Camera& cam);
   Renderer& setUpObjectUniforms(std::unordered_map<std::string,int>& uniforms,Object3D& obj);
   Renderer& setUpMaterialUniforms(std::unordered_map<std::string,int>& uniforms,Material& mat);
+  Renderer& setUpSceneUniforms(std::unordered_map<std::string,int>& uniforms,Scene& scene);
   Renderer& setUpGlobalUniforms(std::unordered_map<std::string,int>& uniforms);
   Renderer& setUpTextureUniforms(std::unordered_map<std::string,int>& uniforms,Material& mat,std::unordered_map<std::string,int>& texUnits);
   Renderer& drawGeometry(const Geometry& geom, Vao& vao);
