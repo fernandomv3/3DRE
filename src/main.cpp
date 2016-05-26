@@ -103,13 +103,13 @@ int main(int argc, char** argv){
   Scene scene;
   Renderer renderer(SCREEN_WIDTH,SCREEN_HEIGHT);
   
-  cam.perspectiveCamera(60.0,float(SCREEN_WIDTH)/float(SCREEN_HEIGHT),0.1,100.0);
-  cam.getPosition()[2] = 10;
+  cam.perspectiveCamera(30.0,float(SCREEN_WIDTH)/float(SCREEN_HEIGHT),0.1,100.0);
+  cam.getPosition()[2] = 30;
 
-  auto geom = std::make_shared<Geometry>(quadGeometry());
+  auto geom = std::make_shared<Geometry>(icosahedronGeometry());
   auto mat = std::make_shared<Material>(Material(Vec4(1.0,0.0,0.0,0.0)));
-  auto tex = std::make_shared<Texture>(Texture("checkers.png"));
-  mat->setColorMap(tex);
+  //auto tex = std::make_shared<Texture>(Texture("checkers.png"));
+  //mat->setColorMap(tex);
   auto obj = std::make_shared<Mesh>(Mesh(geom,mat));
   auto obj2 = std::make_shared<Mesh>(Mesh(geom,mat));
   auto parentObj = std::make_shared<Object3D>(Object3D());
@@ -118,15 +118,19 @@ int main(int argc, char** argv){
   scene.add(obj);
   scene.add(obj2);
 
+  auto dirlight = std::make_shared<Light>(Light(Vec4(0.8,0.8,0.8,1.0)));
+  dirlight->setPosition(Vec4(2.0,2.0,2.0,0.0));
+  scene.add(dirlight);
+
   bool quit = false;
-  parentObj->getPosition()[0]=8;
-  parentObj->getPosition()[1]=8;
+  parentObj->getPosition()[0]=2;
+  parentObj->getPosition()[1]=2;
   while(!quit){
     float t = SDL_GetTicks()*0.001;
     renderer.setTime(t);
     float s = 0.5 * sin(t) + 1 ;
     parentObj->getRotation()[2] += 0.05;
-    obj2->getRotation()[2] += 0.1;
+    //obj2->getRotation()[2] += 0.1;
     obj->getRotation()[2] -= 0.1;
     obj->setScale(Vec4(s,s,s,0.0));
     quit = handleEvents();

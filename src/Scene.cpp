@@ -4,7 +4,7 @@
 
 Scene::Scene(){
   uuid = generateUUID();
-  ambientLight = Light(Vec4(0.0,0.0,1.0,1.0));
+  ambientLight = Light(Vec4(0.2,0.2,0.2,1.0));
 }
 std::string Scene::getUUID()const { return uuid; }
 const std::vector< std::shared_ptr<Object3D> >& Scene::getObjects()const { return objects; }
@@ -36,21 +36,29 @@ Light& Scene::getAmbientLight(){ return ambientLight; }
 
 std::vector< std::tuple<std::string,std::string,int,void*> > Scene::getUniforms(){
   std::vector< std::tuple<std::string,std::string,int,void*> > res;
-  std::vector<float> color;
-  std::vector<float> position;
-  std::vector<float> attenuation;
   int numLights = lights.size();
-  color.reserve(numLights*4);
-  position.reserve(numLights*4);
-  attenuation.reserve(numLights);
+  std::vector<float> c;
+  c.reserve(numLights*4);
+  std::vector<float> p;
+  p.reserve(numLights*4);
+  std::vector<float> a;
+  a.reserve(numLights);
+  std::vector<float> i;
+  i.reserve(numLights);
   for(auto light : lights){
-    color.insert(std::end(color), std::begin(light->getColor().getElements()), std::end(light->getColor().getElements()));
-    position.insert(std::end(position), std::begin(light->getPosition().getElements()), std::end(light->getPosition().getElements()));
-    attenuation.push_back(light->getAttenuation());
+    c.insert(std::end(c), std::begin(light->getColor().getElements()), std::end(light->getColor().getElements()));
+    p.insert(std::end(p), std::begin(light->getPosition().getElements()), std::end(light->getPosition().getElements()));
+    a.push_back(light->getAttenuation());
+    i.push_back(light->getIntensity());
   }
+  color.swap(c);
+  position.swap(p);
+  attenuation.swap(a);
+  intensity.swap(i);
   if(!color.empty()) res.push_back(std::make_tuple("light.color","4fv",numLights,color.data()));
   if(!position.empty())res.push_back(std::make_tuple("light.position","4fv",numLights,position.data()));
   if(!attenuation.empty())res.push_back(std::make_tuple("light.attenuation","1f",numLights,attenuation.data()));
+  if(!intensity.empty())res.push_back(std::make_tuple("light.intensity","1f",numLights,intensity.data()));
   res.push_back(std::make_tuple("ambient","4f",1,static_cast<void*>(ambientLight.getColor().getElements().data())));
   return res;
 }

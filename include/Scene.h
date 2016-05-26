@@ -12,6 +12,10 @@ private:
   std::vector< std::shared_ptr<Object3D> > objects;
   std::vector< std::shared_ptr<Light> > lights;
   Light ambientLight;
+  std::vector<float> color;
+  std::vector<float> position;
+  std::vector<float> attenuation;
+  std::vector<float> intensity;
 public:
   Scene();
   std::string getUUID()const;

@@ -38,5 +38,6 @@ public:
 };
 Geometry loadDataFromFile(std::string filename);
 Geometry quadGeometry(int size =1);
+Geometry icosahedronGeometry();
 
 #endif

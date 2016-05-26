@@ -59,11 +59,10 @@ Object3D& Object3D::updateModelMatrix(){
     res = Mat4::identity();
   }
 
-  this->modelMatrix = cross(cross(cross(res,s),r),t);
+  this->modelMatrix = cross(cross(cross(s,r),t),res);
   return *this;
 }
 Object3D& Object3D::updateNormalModelMatrix(){
-  Mat4 t = Mat4::translation(-position[0],-position[1],-position[2]);
   Mat4 r;
   if (!rotQuaternions){
     r = Mat4::rotation(-rotation[0],-rotation[1],-rotation[2]);
@@ -72,12 +71,13 @@ Object3D& Object3D::updateNormalModelMatrix(){
   }
   Mat4 s = Mat4::scale(1.0/scale[0],1.0/scale[1],1.0/scale[2]);
   Mat4 res = Mat4::identity();
-  res = cross(cross(cross(res,s),r),t);
+  res = cross(cross(s,r),res);
+  res = transpose(res);
   if(parent){
     parent->updateNormalModelMatrix();
-    res = cross(res,parent->modelMatrix);
+    res = cross(parent->normalModelMatrix,res);
   }
-  this->normalModelMatrix = transpose(res);
+  this->normalModelMatrix = res;
   return *this;
 }
 
