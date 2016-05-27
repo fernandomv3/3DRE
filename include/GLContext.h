@@ -4,7 +4,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_opengl.h>
 
-void initializeContext(SDL_GLContext context,SDL_Window* window, int SCREEN_WIDTH, int SCREEN_HEIGHT){
+void initializeContext(SDL_GLContext& context,SDL_Window* window, int SCREEN_WIDTH, int SCREEN_HEIGHT){
   if(SDL_Init(SDL_INIT_VIDEO) < 0){
     std::cerr << "SDL could not initialize! SDL_Error: " << SDL_GetError() << std::endl;
   }

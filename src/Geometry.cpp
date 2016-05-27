@@ -39,7 +39,7 @@ Geometry& Geometry::setBitangents(std::vector<float> bitangents){
   return *this;
 }
 
-std::vector< std::tuple<std::string,void*,int,int,std::type_index> > Geometry::getAttributes() const{
+std::vector< std::tuple<std::string,void*,int,int,std::type_index> > Geometry::getAttributes(std::string passName) const{
   std::vector< std::tuple<std::string,void*,int,int,std::type_index> > vec;
   
   if(!elements.empty())

@@ -25,7 +25,7 @@ Vao& Renderer::initGeometryBuffers(const Geometry& geom){
   auto &bufferObj = this->vao[geom.getUUID()];
   if (bufferObj.vao == 0) glGenVertexArrays(1,&bufferObj.vao);
   if(bufferObj.vbo.empty()){
-    auto geomAttr =geom.getAttributes();
+    auto geomAttr =geom.getAttributes("init");
     for(auto attr : geomAttr){
       std::string name = std::get<0>(attr);
       uint buf = makeBuffer(
@@ -63,7 +63,7 @@ std::unordered_map<std::string,int>& Renderer::initTextures(const Material& mat)
   auto &program = this->programs[mat.getUUID()];
   auto& texUnits = program.getTexUnits();
   if(texUnits.empty()){  
-    auto tex = mat.getTextures();
+    auto tex = mat.getTextures("init");
     for(auto t : tex){
       auto& texObj = this->textures[t.second->getUUID()];
       if(t.second->getSourceFile() != "") t.second->loadFile();
@@ -100,12 +100,12 @@ std::unordered_map<std::string,int>& Renderer::getUniformLocations(GLProgram& pr
   int program = prog.getProgram();
   auto& uniforms = prog.getUniforms();
   if(uniforms.empty()){
-    auto camUniformData = cam.getUniforms();
-    auto objUniformData = obj.getUniforms();
-    auto matUniformData = mat.getUniforms();
-    auto globalUniformData = this->getUniforms();
-    auto sceneUniformData = scene.getUniforms();
-    auto tex = mat.getTextures();
+    auto camUniformData = cam.getUniforms("location");
+    auto objUniformData = obj.getUniforms("location");
+    auto matUniformData = mat.getUniforms("location");
+    auto globalUniformData = this->getUniforms("location");
+    auto sceneUniformData = scene.getUniforms("location");
+    auto tex = mat.getTextures("location");
     for(auto u : camUniformData) uniforms[std::get<0>(u)] = glGetUniformLocation(program,std::get<0>(u).c_str());
     for(auto u : objUniformData) uniforms[std::get<0>(u)] = glGetUniformLocation(program,std::get<0>(u).c_str());
     for(auto u : matUniformData) uniforms[std::get<0>(u)] = glGetUniformLocation(program,std::get<0>(u).c_str());
@@ -117,7 +117,7 @@ std::unordered_map<std::string,int>& Renderer::getUniformLocations(GLProgram& pr
 }
 
 Renderer& Renderer::setUpCameraUniforms(std::unordered_map<std::string,int>& uniforms,Camera& cam){
-  auto uniformData = cam.getUniforms();
+  auto uniformData = cam.getUniforms("forward");
   for(auto& u : uniformData){
     updateUniform(uniforms[std::get<0>(u)],std::get<2>(u),std::get<1>(u),std::get<3>(u));
   }
@@ -125,7 +125,7 @@ Renderer& Renderer::setUpCameraUniforms(std::unordered_map<std::string,int>& uni
 }
 
 Renderer& Renderer::setUpObjectUniforms(std::unordered_map<std::string,int>& uniforms,Object3D& obj){
-  auto uniformData = obj.getUniforms();
+  auto uniformData = obj.getUniforms("forward");
   for(auto& u : uniformData){
     updateUniform(uniforms[std::get<0>(u)],std::get<2>(u),std::get<1>(u),std::get<3>(u));
   }
@@ -133,7 +133,7 @@ Renderer& Renderer::setUpObjectUniforms(std::unordered_map<std::string,int>& uni
 }
 
 Renderer& Renderer::setUpMaterialUniforms(std::unordered_map<std::string,int>& uniforms,Material& mat){
-  auto uniformData = mat.getUniforms();
+  auto uniformData = mat.getUniforms("forward");
   for(auto& u : uniformData){
     updateUniform(uniforms[std::get<0>(u)],std::get<2>(u),std::get<1>(u),std::get<3>(u));
   }
@@ -141,7 +141,7 @@ Renderer& Renderer::setUpMaterialUniforms(std::unordered_map<std::string,int>& u
 }
 
 Renderer& Renderer::setUpSceneUniforms(std::unordered_map<std::string,int>& uniforms,Scene& scene){
-  auto uniformData = scene.getUniforms();
+  auto uniformData = scene.getUniforms("forward");
   for(auto& u : uniformData){
     updateUniform(uniforms[std::get<0>(u)],std::get<2>(u),std::get<1>(u),std::get<3>(u));
   }
@@ -149,7 +149,7 @@ Renderer& Renderer::setUpSceneUniforms(std::unordered_map<std::string,int>& unif
 }
 
 Renderer& Renderer::setUpGlobalUniforms(std::unordered_map<std::string,int>& uniforms){
-  auto uniformData = getUniforms();
+  auto uniformData = getUniforms("forward");
   for(auto& u : uniformData){
     updateUniform(uniforms[std::get<0>(u)],std::get<2>(u),std::get<1>(u),std::get<3>(u));
   }
@@ -157,7 +157,7 @@ Renderer& Renderer::setUpGlobalUniforms(std::unordered_map<std::string,int>& uni
 }
 
   Renderer& Renderer::setUpTextureUniforms(std::unordered_map<std::string,int>& uniforms,Material& mat,std::unordered_map<std::string,int>& texUnits){
-    auto matTextures = mat.getTextures();
+    auto matTextures = mat.getTextures("forward");
     for(auto& texture : matTextures){
       auto& texObj = textures[texture.second->getUUID()];
       glUniform1i(uniforms[texture.first],texUnits[texture.first]);
@@ -189,7 +189,7 @@ Renderer& Renderer::drawGeometry(const Geometry& geom, Vao& vao){
   return *this;
 }
 
-Renderer& Renderer::render(Scene& scene, Camera& cam){
+Renderer& Renderer::render(Scene& scene, Camera& cam,std::string passName){
   cam.updateWorldMatrix();
   for(auto obj : scene.getObjects()){
     auto mesh = std::static_pointer_cast<Mesh>(obj);
@@ -326,7 +326,7 @@ Renderer& Renderer::updateUniform(int location,int count, const std::string type
   return *this;
 }
 
-std::vector< std::tuple<std::string,std::string,int,void*> > Renderer::getUniforms(){
+std::vector< std::tuple<std::string,std::string,int,void*> > Renderer::getUniforms(std::string passName){
   std::vector< std::tuple<std::string,std::string,int,void*> > res;
   res.push_back(std::make_tuple("time","1f",1,&time));
   res.push_back(std::make_tuple("screenWidth","1i",1,&width));

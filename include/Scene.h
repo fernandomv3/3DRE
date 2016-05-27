@@ -26,7 +26,7 @@ public:
   Scene& add(std::shared_ptr<Object3D> object);
   Scene& remove(std::shared_ptr<Object3D> object);
   Light& getAmbientLight();
-  std::vector< std::tuple<std::string,std::string,int,void*> > getUniforms();
+  std::vector< std::tuple<std::string,std::string,int,void*> > getUniforms(std::string passName);
 };
 
 #endif

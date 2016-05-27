@@ -107,7 +107,7 @@ public:
   Renderer(int width,int height);
   ~Renderer();
   Renderer& setTime(float ms);
-  Renderer& render(Scene& scene,Camera& camera);
+  Renderer& render(Scene& scene,Camera& camera,std::string passName);
   Vao& initGeometryBuffers(const Geometry& geom);
   Renderer& setUpVertexAttributes(GLProgram& prog,Vao& vao);
   GLProgram& initProgram(const Material& mat, const Geometry& geom);
@@ -124,7 +124,7 @@ public:
   uint makeBuffer(GLenum target, const void* data, int size, GLenum usage = GL_STATIC_DRAW);
   uint makeSampler(const Texture& texture);
   Renderer& updateUniform(int location,int count,const std::string type, void* data);
-  virtual std::vector< std::tuple<std::string,std::string,int,void*> >getUniforms();
+  virtual std::vector< std::tuple<std::string,std::string,int,void*> >getUniforms(std::string passName);
 };
 
 #endif

@@ -37,8 +37,8 @@ public:
   std::shared_ptr<Texture> getNormalMap()const;
   std::shared_ptr<Texture> getSpecularMap()const;
   virtual std::vector< std::pair<std::string,std::string> > getShaders() const;
-  virtual std::unordered_map< std::string,std::shared_ptr<Texture> > getTextures() const;
-  virtual std::vector< std::tuple<std::string,std::string,int,void*> >getUniforms();
+  virtual std::unordered_map< std::string,std::shared_ptr<Texture> > getTextures(std::string passName) const;
+  virtual std::vector< std::tuple<std::string,std::string,int,void*> >getUniforms(std::string passName);
 };
 
 

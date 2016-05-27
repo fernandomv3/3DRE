@@ -34,7 +34,7 @@ Scene& Scene::remove(std::shared_ptr<Object3D> object){
 
 Light& Scene::getAmbientLight(){ return ambientLight; }
 
-std::vector< std::tuple<std::string,std::string,int,void*> > Scene::getUniforms(){
+std::vector< std::tuple<std::string,std::string,int,void*> > Scene::getUniforms(std::string passName){
   std::vector< std::tuple<std::string,std::string,int,void*> > res;
   int numLights = lights.size();
   std::vector<float> c;

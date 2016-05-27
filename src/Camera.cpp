@@ -44,7 +44,7 @@ Camera& Camera::orthographicCamera(float dist){
   return *this;
 }
 
-std::vector< std::tuple<std::string,std::string,int,void*> > Camera::getUniforms(){
+std::vector< std::tuple<std::string,std::string,int,void*> > Camera::getUniforms(std::string passName){
   std::vector< std::tuple<std::string,std::string,int,void*> > res;
   res.push_back(std::make_tuple("projectionMatrix","m4fv",1,projectionMatrix.getElements().data()));
   res.push_back(std::make_tuple("worldMatrix","m4fv",1,worldMatrix.getElements().data()));

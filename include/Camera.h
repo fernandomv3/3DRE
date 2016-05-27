@@ -20,7 +20,7 @@ public:
   Camera& setGamma(float gamma);
   Camera& perspectiveCamera(float fov, float aspectRatio, float near, float far);
   Camera& orthographicCamera(float dist);
-  std::vector< std::tuple<std::string,std::string,int,void*> >getUniforms();
+  std::vector< std::tuple<std::string,std::string,int,void*> >getUniforms(std::string passName);
 };
 
 

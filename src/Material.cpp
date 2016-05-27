@@ -54,7 +54,7 @@ std::vector< std::pair <std::string,std::string> > Material::getShaders() const{
   return vec;
 }
 
-std::unordered_map< std::string,std::shared_ptr<Texture> > Material::getTextures() const{
+std::unordered_map< std::string,std::shared_ptr<Texture> > Material::getTextures(std::string passName) const{
   auto result = std::unordered_map< std::string,std::shared_ptr<Texture> >();
   if(colorMap != nullptr){
     colorMap->loadFile();
@@ -71,7 +71,7 @@ std::unordered_map< std::string,std::shared_ptr<Texture> > Material::getTextures
   return result;
 }
 
-std::vector< std::tuple<std::string,std::string,int,void*> > Material::getUniforms(){
+std::vector< std::tuple<std::string,std::string,int,void*> > Material::getUniforms(std::string passName){
   std::vector< std::tuple<std::string,std::string,int,void*> > res;
   res.push_back(std::make_tuple("material.diffuse","4fv",1,diffuseColor.getElements().data()));
   res.push_back(std::make_tuple("material.specular","4fv",1,specularColor.getElements().data()));
