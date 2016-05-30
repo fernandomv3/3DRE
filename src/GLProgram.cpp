@@ -95,6 +95,8 @@ std::vector<Shader>& GLProgram::getShaders(){
 
 std::unordered_map<std::string,int>& GLProgram::getAttrLoc(){ return attrLoc; }
 
+std::unordered_map<std::string,int>& GLProgram::getOutputLoc(){ return outputLoc; }
+
 std::unordered_map<std::string,int>& GLProgram::getTexUnits() { return texUnits; }
 
 int GLProgram::makeProgram(){

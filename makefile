@@ -13,7 +13,8 @@ OBJS = $(BUILDDIR)/main.o \
 	   $(BUILDDIR)/Geometry.o \
 	   $(BUILDDIR)/Material.o \
 	   $(BUILDDIR)/Mesh.o \
-	   $(BUILDDIR)/Renderer.o
+	   $(BUILDDIR)/Renderer.o \
+	   $(BUILDDIR)/Framebuffer.o
 
 INCDIR = include
 SRCDIR = src
@@ -70,6 +71,10 @@ Light.h: Mesh.h
 Renderer.h: Scene.h Camera.h GLProgram.h
 
 Scene.h: Light.h
+
+Framebuffer.cpp: MathUtils.h
+
+Framebuffer.h: Texture.h
 
 $(BUILDDIR)/main.o: $(SRCDIR)/main.cpp $(INCDIR)/Camera.h $(INCDIR)/Scene.h $(INCDIR)/Geometry.h $(INCDIR)/Material.h $(INCDIR)/Mesh.h $(INCDIR)/Renderer.h
 	@echo compiling 3DRE binary

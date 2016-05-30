@@ -4,6 +4,8 @@
 Renderer::Renderer(int width, int height){
   this->height = height;
   this->width = width;
+  this->readFramebuffer = nullptr;
+  this->writeFramebuffer = nullptr;
 }
 
 Renderer::~Renderer(){
@@ -74,6 +76,19 @@ std::unordered_map<std::string,int>& Renderer::initTextures(const Material& mat)
   }
   return texUnits;
 }
+
+/*Renderer& Renderer::initWriteFramebuffer(){
+  if(texUnits.empty()){  
+    auto tex = fb->getRenderTargets("init");
+    for(auto t : tex){
+      auto& texObj = this->textures[t.second->getUUID()];
+      if(texObj.texture == 0){
+        texObj.texture = makeTexture(*(t.second));
+      }
+    }
+  }
+  return *this;
+}*/
 
 Renderer& Renderer::setUpVertexAttributes(GLProgram& prog, Vao& vao){
   if(!(vao.initialized)){
@@ -234,6 +249,16 @@ Renderer& Renderer::render(Scene& scene, Camera& cam,std::string passName){
 
 Renderer& Renderer::setTime(float ms){
   this->time = ms;
+  return *this;
+}
+
+Renderer& Renderer::setReadFramebuffer(std::shared_ptr<Framebuffer> fb){
+  this->readFramebuffer = fb;
+  return *this;
+}
+
+Renderer& Renderer::setWriteFramebuffer(std::shared_ptr<Framebuffer> fb){
+  this->writeFramebuffer = fb;
   return *this;
 }
 

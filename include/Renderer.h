@@ -5,6 +5,7 @@
 #include "Scene.h"
 #include "Camera.h"
 #include "GLProgram.h"
+#include "Framebuffer.h"
 
 #include <unordered_map>
 #include <typeindex>
@@ -36,6 +37,9 @@ private:
   std::unordered_map<std::string,Vao> vao;
   std::unordered_map<std::string,GLProgram> programs;
   std::unordered_map<std::string,GLTexture> textures;
+
+  std::shared_ptr<Framebuffer> writeFramebuffer;
+  std::shared_ptr<Framebuffer> readFramebuffer;
 
   float time;
   int height;
@@ -107,6 +111,8 @@ public:
   Renderer(int width,int height);
   ~Renderer();
   Renderer& setTime(float ms);
+  Renderer& setReadFramebuffer(std::shared_ptr<Framebuffer> fb);
+  Renderer& setWriteFramebuffer(std::shared_ptr<Framebuffer> fb);
   Renderer& render(Scene& scene,Camera& camera,std::string passName);
   Vao& initGeometryBuffers(const Geometry& geom);
   Renderer& setUpVertexAttributes(GLProgram& prog,Vao& vao);
