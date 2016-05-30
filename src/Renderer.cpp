@@ -77,18 +77,17 @@ std::unordered_map<std::string,int>& Renderer::initTextures(const Material& mat)
   return texUnits;
 }
 
-/*Renderer& Renderer::initWriteFramebuffer(){
-  if(texUnits.empty()){  
-    auto tex = fb->getRenderTargets("init");
-    for(auto t : tex){
-      auto& texObj = this->textures[t.second->getUUID()];
-      if(texObj.texture == 0){
-        texObj.texture = makeTexture(*(t.second));
-      }
+Renderer& Renderer::initWriteFramebuffer(){
+  writeFramebuffer->init();
+  auto tex = writeFramebuffer->getRenderTargets("init");
+  for(auto t : tex){
+    auto& texObj = this->textures[t.second->getUUID()];
+    if(texObj.texture == 0){
+      texObj.texture = makeTexture(*(t.second));
     }
   }
   return *this;
-}*/
+}
 
 Renderer& Renderer::setUpVertexAttributes(GLProgram& prog, Vao& vao){
   if(!(vao.initialized)){

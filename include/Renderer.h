@@ -118,6 +118,7 @@ public:
   Renderer& setUpVertexAttributes(GLProgram& prog,Vao& vao);
   GLProgram& initProgram(const Material& mat, const Geometry& geom);
   std::unordered_map<std::string,int>& initTextures(const Material& mat);
+  Renderer& initWriteFramebuffer();
   std::unordered_map<std::string,int>& getUniformLocations(GLProgram& prog,Scene& scene,Camera& cam,Object3D& obj,Geometry& geom,Material& mat);
   Renderer& setUpCameraUniforms(std::unordered_map<std::string,int>& uniforms,Camera& cam);
   Renderer& setUpObjectUniforms(std::unordered_map<std::string,int>& uniforms,Object3D& obj);

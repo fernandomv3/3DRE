@@ -11,12 +11,12 @@ private:
   std::string uuid;
   int width;
   int height;
-  int fbo;
+  uint fbo;
   std::string target;
   std::unordered_map< std::string,std::shared_ptr<Texture> > renderTargets;
 public:
   Framebuffer(int width, int height);
-  int init();
+  uint init();
   Framebuffer& addRenderTarget(std::string name, std::shared_ptr<Texture> texture);
   Framebuffer& removeTarget(std::string name);
   std::unordered_map< std::string,std::shared_ptr<Texture> >& getRenderTargets(std::string passName);
