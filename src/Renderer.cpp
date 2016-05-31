@@ -78,14 +78,26 @@ std::unordered_map<std::string,int>& Renderer::initTextures(const Material& mat)
 }
 
 Renderer& Renderer::initWriteFramebuffer(){
-  writeFramebuffer->init();
+  int fbo = writeFramebuffer->init();
+  glBindFramebuffer(GL_FRAMEBUFFER, fbo);
   auto tex = writeFramebuffer->getRenderTargets("init");
+  int i = 0;
+  std::vector<uint> attachments;
   for(auto t : tex){
     auto& texObj = this->textures[t.second->getUUID()];
     if(texObj.texture == 0){
       texObj.texture = makeTexture(*(t.second));
     }
+    if(t.second->getFormat()!= "depth" && t.second->getFormat()!= "depth_stencil" ){
+      glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 +i, texObj.texture, 0);
+      attachments.push_back(GL_COLOR_ATTACHMENT0 +i);
+      ++i;  
+    }else{
+      glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, texObj.texture, 0);
+    }
   }
+  glDrawBuffers(attachments.size(),attachments.data());
+  glBindFramebuffer(GL_FRAMEBUFFER,0);
   return *this;
 }
 
