@@ -103,7 +103,7 @@ int GLProgram::makeProgram(){
   int programOk;
   int programValid;
   this->program = glCreateProgram();
-  for( auto shader : this->shaders){
+  for( auto& shader : this->shaders){
     if (shader.shaderObject == 0){
       this->compileShader(shader);
     }

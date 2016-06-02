@@ -34,8 +34,8 @@ void initializeContext(){
     std::cerr << "SDL could not initialize! SDL_Error: " << SDL_GetError() << std::endl;
   }
   else{
-    SDL_GL_SetAttribute( SDL_GL_CONTEXT_MAJOR_VERSION, 3 );
-    SDL_GL_SetAttribute( SDL_GL_CONTEXT_MINOR_VERSION, 3 );
+    SDL_GL_SetAttribute( SDL_GL_CONTEXT_MAJOR_VERSION, 4 );
+    SDL_GL_SetAttribute( SDL_GL_CONTEXT_MINOR_VERSION, 4 );
     SDL_GL_SetAttribute( SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE );
     SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
     SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 4);
@@ -58,6 +58,7 @@ void initializeContext(){
       else{
         glewExperimental = GL_TRUE;
         GLenum err = glewInit();
+         glGetError();//read error on glewInit()
         if (GLEW_OK != err)
         {
           std::cerr << "Error: " << glewGetErrorString(err) << std::endl;
@@ -98,18 +99,24 @@ void cleanUp(){
 int main(int argc, char** argv){
 
   initializeContext();
-
   Camera cam;
-  Scene scene;
+  Scene scene, scene2;
   Renderer renderer(SCREEN_WIDTH,SCREEN_HEIGHT);
-  
+
+  auto writeFb = std::make_shared<Framebuffer>(Framebuffer(SCREEN_WIDTH,SCREEN_HEIGHT));
+  auto out1 = std::make_shared<Texture>(Texture(SCREEN_WIDTH,SCREEN_HEIGHT));
+  auto depth = std::make_shared<Texture>(Texture(SCREEN_WIDTH,SCREEN_HEIGHT));
+  depth->setFormat("depth");
+  //writeFb->addRenderTarget("depth",depth);
+  writeFb->addRenderTarget("color",out1);
+
   cam.perspectiveCamera(30.0,float(SCREEN_WIDTH)/float(SCREEN_HEIGHT),0.1,100.0);
   cam.getPosition()[2] = 15;
 
   auto geom = std::make_shared<Geometry>(icosahedronGeometry());
   auto mat = std::make_shared<Material>(Material(Vec4(1.0,0.0,0.0,0.0)));
-  //auto tex = std::make_shared<Texture>(Texture("checkers.png"));
-  //mat->setColorMap(tex);
+  mat->setShaderFiles("/home/fernando/Projects/engine/vertex.glsl","/home/fernando/Projects/engine/fragment.glsl");
+
   auto obj = std::make_shared<Mesh>(Mesh(geom,mat));
   auto obj2 = std::make_shared<Mesh>(Mesh(geom,mat));
   auto parentObj = std::make_shared<Object3D>(Object3D());
@@ -122,9 +129,19 @@ int main(int argc, char** argv){
   dirlight->setPosition(Vec4(2.0,2.0,2.0,0.0));
   scene.add(dirlight);
 
+  auto quad = std::make_shared<Geometry>(quadGeometry());
+  auto quadMat = std::make_shared<Material>(Material(Vec4(1.0,0.0,0.0,0.0)));
+  quadMat->setShaderFiles("/home/fernando/Projects/engine/vertex2.glsl","/home/fernando/Projects/engine/fragment2.glsl");
+  auto tex = std::make_shared<Texture>(Texture("checkers.png"));
+  //quadMat->setColorMap(tex);
+
+  auto quadObj = std::make_shared<Mesh>(Mesh(quad,quadMat));
+  scene2.add(quadObj);
+
   bool quit = false;
   parentObj->getPosition()[0]=3;
   parentObj->getPosition()[1]=3;
+
   while(!quit){
     float t = SDL_GetTicks()*0.001;
     renderer.setTime(t);
@@ -135,8 +152,12 @@ int main(int argc, char** argv){
     obj->setScale(Vec4(s,s,s,0.0));
     quit = handleEvents();
     glClearColor(1.0,1.0,1.0,1.0);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    renderer.setWriteFramebuffer(writeFb);
+    renderer.setReadFramebuffer(nullptr);
     renderer.render(scene,cam,"forward");
+    renderer.setWriteFramebuffer(nullptr);
+    renderer.setReadFramebuffer(writeFb);
+    renderer.render(scene2,cam,"second");
     SDL_GL_SwapWindow(window);
   }
   cleanUp();

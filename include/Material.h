@@ -19,6 +19,8 @@ private:
   std::shared_ptr<Texture> colorMap;
   std::shared_ptr<Texture> normalMap;
   std::shared_ptr<Texture> specularMap;
+  std::string vf;
+  std::string ff;
 public:
   Material(const Vec4 diffuse = Vec4(), const Vec4 specular = Vec4(), float shininess = 0.0);
 
@@ -28,6 +30,7 @@ public:
   Material& setColorMap(const std::shared_ptr<Texture> colorMap);
   Material& setNormalMap(const std::shared_ptr<Texture> normalMap);
   Material& setSpecularMap(const std::shared_ptr<Texture> specularMap);
+  Material& setShaderFiles(const std::string vf, const std::string ff);
 
   std::string getUUID()const;
   Vec4& getDiffuseColor();

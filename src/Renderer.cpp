@@ -69,7 +69,21 @@ std::unordered_map<std::string,int>& Renderer::initTextures(const Material& mat)
     for(auto t : tex){
       auto& texObj = this->textures[t.second->getUUID()];
       if(t.second->getSourceFile() != "") t.second->loadFile();
-      texObj.texture = makeTexture(*(t.second));
+      texObj.texture = makeTexture(*(t.second));break;
+      texObj.sampler = makeSampler(*(t.second));
+      texUnits[t.first] = program.getFreeTextureUnit();
+    }
+  }
+  return texUnits;
+}
+
+std::unordered_map<std::string,int>& Renderer::initReadFramebuffer(const Material& mat){
+  auto &program = this->programs[mat.getUUID()];
+  auto& texUnits = program.getTexUnits();
+  auto tex = readFramebuffer->getRenderTargets("init");
+  for(auto t : tex){
+    auto& texObj = this->textures[t.second->getUUID()];
+    if(texObj.sampler == 0){
       texObj.sampler = makeSampler(*(t.second));
       texUnits[t.first] = program.getFreeTextureUnit();
     }
@@ -78,26 +92,38 @@ std::unordered_map<std::string,int>& Renderer::initTextures(const Material& mat)
 }
 
 Renderer& Renderer::initWriteFramebuffer(){
-  int fbo = writeFramebuffer->init();
-  glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-  auto tex = writeFramebuffer->getRenderTargets("init");
-  int i = 0;
-  std::vector<uint> attachments;
-  for(auto t : tex){
-    auto& texObj = this->textures[t.second->getUUID()];
-    if(texObj.texture == 0){
-      texObj.texture = makeTexture(*(t.second));
+  if (!writeFramebuffer->isInitialized()){
+    int fbo = writeFramebuffer->init();
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+    auto tex = writeFramebuffer->getRenderTargets("init");
+    int i = 0;
+    std::vector<uint> attachments;
+    for(auto t : tex){
+      auto& texObj = this->textures[t.second->getUUID()];
+      if(texObj.texture == 0){
+        texObj.texture = makeTexture(*(t.second));
+      }
+      if(t.second->getFormat()!= "depth" && t.second->getFormat()!= "depth_stencil" ){
+        glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 +i, texObj.texture, 0);
+        attachments.push_back(GL_COLOR_ATTACHMENT0 +i);
+        ++i;  
+      }else{
+        glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, texObj.texture, 0);
+      }
     }
-    if(t.second->getFormat()!= "depth" && t.second->getFormat()!= "depth_stencil" ){
-      glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 +i, texObj.texture, 0);
-      attachments.push_back(GL_COLOR_ATTACHMENT0 +i);
-      ++i;  
-    }else{
-      glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, texObj.texture, 0);
+    /*uint depthBuf;
+    glGenRenderbuffers(1,&depthBuf);
+    glBindRenderbuffer(GL_RENDERBUFFER,depthBuf);
+    glRenderbufferStorage(GL_RENDERBUFFER,GL_DEPTH_COMPONENT24,this->width,this->height);
+    glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthBuf);*/
+
+    if(glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE){
+      std::cout << "Framebuffer not created correctly" << std::endl;
+      exit(0);
     }
+    glDrawBuffers(attachments.size(),attachments.data());
+    glBindFramebuffer(GL_FRAMEBUFFER,0);
   }
-  glDrawBuffers(attachments.size(),attachments.data());
-  glBindFramebuffer(GL_FRAMEBUFFER,0);
   return *this;
 }
 
@@ -107,6 +133,7 @@ Renderer& Renderer::setUpVertexAttributes(GLProgram& prog, Vao& vao){
       if(vbo.first == "index")continue;
       glBindBuffer(GL_ARRAY_BUFFER,vbo.second.buffer);
       int loc = prog.getAttrLoc()[vbo.first];
+      if(loc == -1) continue;
       glVertexAttribPointer(
         loc,
         vbo.second.numComponents,
@@ -138,6 +165,10 @@ std::unordered_map<std::string,int>& Renderer::getUniformLocations(GLProgram& pr
     for(auto u : globalUniformData) uniforms[std::get<0>(u)] = glGetUniformLocation(program,std::get<0>(u).c_str());
     for(auto u : sceneUniformData) uniforms[std::get<0>(u)] = glGetUniformLocation(program,std::get<0>(u).c_str());
     for(auto t : tex) uniforms[t.first] = glGetUniformLocation(program,t.first.c_str());
+    if(readFramebuffer){
+      auto& renderTargets = readFramebuffer->getRenderTargets("location");
+      for(auto t : renderTargets) uniforms[t.first] = glGetUniformLocation(program,("fb"+t.first).c_str());
+    }
   }
   return uniforms;
 }
@@ -182,17 +213,29 @@ Renderer& Renderer::setUpGlobalUniforms(std::unordered_map<std::string,int>& uni
   return *this;
 }
 
-  Renderer& Renderer::setUpTextureUniforms(std::unordered_map<std::string,int>& uniforms,Material& mat,std::unordered_map<std::string,int>& texUnits){
-    auto matTextures = mat.getTextures("forward");
-    for(auto& texture : matTextures){
-      auto& texObj = textures[texture.second->getUUID()];
-      glUniform1i(uniforms[texture.first],texUnits[texture.first]);
-      glActiveTexture(GL_TEXTURE0 + texUnits[texture.first]);
-      glBindTexture(GLTextureTarget[texture.second->getTarget()],texObj.texture);
-      glBindSampler(texUnits[texture.first],texObj.sampler);
-    }
-    return *this;
+Renderer& Renderer::setUpTextureUniforms(std::unordered_map<std::string,int>& uniforms,Material& mat,std::unordered_map<std::string,int>& texUnits){
+  auto matTextures = mat.getTextures("forward");
+  for(auto& texture : matTextures){
+    auto& texObj = textures[texture.second->getUUID()];
+    glUniform1i(uniforms[texture.first],texUnits[texture.first]);
+    glActiveTexture(GL_TEXTURE0 + texUnits[texture.first]);
+    glBindTexture(GLTextureTarget[texture.second->getTarget()],texObj.texture);
+    glBindSampler(texUnits[texture.first],texObj.sampler);
   }
+  return *this;
+}
+
+Renderer& Renderer::setUpReadFramebufferUniforms(std::unordered_map<std::string,int>& uniforms,std::unordered_map<std::string,int>& texUnits){
+  auto fbTextures = readFramebuffer->getRenderTargets("forward");
+  for(auto& texture : fbTextures){
+    auto& texObj = textures[texture.second->getUUID()];
+    glUniform1i(uniforms[texture.first],texUnits[texture.first]);
+    glActiveTexture(GL_TEXTURE0 + texUnits[texture.first]);
+    glBindTexture(GLTextureTarget[texture.second->getTarget()],texObj.texture);
+    glBindSampler(texUnits[texture.first],texObj.sampler);
+  }
+  return *this;
+}
 
 Renderer& Renderer::drawGeometry(const Geometry& geom, Vao& vao){
   if (!geom.getElements().empty()){
@@ -216,18 +259,23 @@ Renderer& Renderer::drawGeometry(const Geometry& geom, Vao& vao){
 }
 
 Renderer& Renderer::render(Scene& scene, Camera& cam,std::string passName){
+  if(writeFramebuffer) initWriteFramebuffer();
+  if(writeFramebuffer) glBindFramebuffer(GL_FRAMEBUFFER, writeFramebuffer->getFbo());
+  else glBindFramebuffer(GL_FRAMEBUFFER,0);
+  glViewport(0,0,this->width,this->height);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   cam.updateWorldMatrix();
+  if(readFramebuffer)  glBindFramebuffer(GL_READ_FRAMEBUFFER, readFramebuffer->getFbo());
   for(auto obj : scene.getObjects()){
     auto mesh = std::static_pointer_cast<Mesh>(obj);
     auto geom = mesh->getGeometry();
     auto mat = mesh->getMaterial();
 
     auto& bufferObj =  initGeometryBuffers(*geom);
-
     auto& program = initProgram(*mat,*geom);
-
     auto& texUnits = initTextures(*mat);
 
+    if(readFramebuffer)initReadFramebuffer(*mat);
     auto& uniforms = getUniformLocations(program,scene,cam,*obj,*geom,*mat);
 
     glUseProgram(program.getProgram());
@@ -240,21 +288,18 @@ Renderer& Renderer::render(Scene& scene, Camera& cam,std::string passName){
 
     obj->updateModelMatrix();
     obj->updateNormalModelMatrix();
+    
     setUpObjectUniforms(uniforms,*obj);
-
     setUpMaterialUniforms(uniforms,*mat);
-
     setUpTextureUniforms(uniforms,*mat, texUnits);
-
+    if(readFramebuffer)setUpReadFramebufferUniforms(uniforms,texUnits);
     setUpSceneUniforms(uniforms,scene);
-
     setUpGlobalUniforms(uniforms);
 
     drawGeometry(*geom,bufferObj);
 
     glBindVertexArray(0);
   }
-
   return *this;
 }
 
@@ -285,7 +330,6 @@ uint Renderer::makeTexture(const Texture& texture){
   uint tex;
   uint target = this->GLTextureTarget[texture.getTarget()];
   uint innerFormat = texture.getGamma() ? this->GLInnerFormat["S"+texture.getFormat()+"8"] : this->GLInnerFormat[texture.getFormat()];
-  
   glGenTextures(1,(GLuint*)&tex);
   glBindTexture(target,tex);
   glTexImage2D(
@@ -293,13 +337,17 @@ uint Renderer::makeTexture(const Texture& texture){
     texture.getWidth(), texture.getHeight(), 0,
     this->GLFormat[texture.getFormat()], this->GLType[texture.getType()], texture.getImage()
   );
-  glTexParameteri(target, GL_TEXTURE_MIN_FILTER, this->GLFiltering[texture.getFiltering().second]);
+  glTexParameteri(target, GL_TEXTURE_MIN_FILTER, this->GLFiltering[texture.getFiltering().first]);
   glTexParameteri(target, GL_TEXTURE_MAG_FILTER, this->GLFiltering[texture.getFiltering().second]);
   glTexParameteri(target, GL_TEXTURE_WRAP_S,this->GLWrapping[std::get<0>(texture.getWrapping())]);
   glTexParameteri(target, GL_TEXTURE_WRAP_T,this->GLWrapping[std::get<1>(texture.getWrapping())]);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, texture.getNMipmaps());
   if(texture.getNMipmaps() > 1) glGenerateMipmap(target);
+  if (innerFormat == GL_DEPTH_COMPONENT){
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+  }
   return tex;
 }
 
@@ -314,6 +362,7 @@ uint Renderer::makeSampler(const Texture& texture){
 }
 
 Renderer& Renderer::updateUniform(int location,int count, const std::string type, void* data){
+  if(location == -1) return *this;
   if(type.length() == 4){
     if(type == "m2fv") {glUniformMatrix2fv(location,count,GL_FALSE,static_cast<float*>(data)); return *this;}
     if(type == "m3fv") {glUniformMatrix3fv(location,count,GL_FALSE,static_cast<float*>(data)); return *this;}

@@ -11,11 +11,27 @@ Texture::Texture(const std::string& sourceFile){
   this->width = 0;
   this->nMipmaps = 3;
   this->wrapping = std::make_tuple("edge","edge","");
-  this->filtering =std::make_pair("linear_mipmap_linear","linear_mipmap_linear");
+  this->filtering =std::make_pair("linear_mipmap_linear","linear");
   this->target = "2D";
   this->format = "RGB";
   this->innerFormat = "RGB8";
   this->gamma = true;
+  this->loaded = false;
+  this->type = std::type_index(typeid(unsigned char));
+}
+Texture::Texture(int w, int h){
+  this->uuid = generateUUID();
+  this->sourceFile = "";
+  this->image = std::unique_ptr<char[]>();
+  this->width = w;
+  this->height = h;
+  this->nMipmaps = 0;
+  this->wrapping = std::make_tuple("edge","edge","");
+  this->filtering =std::make_pair("nearest","nearest");
+  this->target = "2D";
+  this->format = "RGBA";
+  this->innerFormat = "RGBA";
+  this->gamma = false;
   this->loaded = false;
   this->type = std::type_index(typeid(unsigned char));
 }

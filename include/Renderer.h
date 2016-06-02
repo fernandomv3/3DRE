@@ -119,6 +119,7 @@ public:
   GLProgram& initProgram(const Material& mat, const Geometry& geom);
   std::unordered_map<std::string,int>& initTextures(const Material& mat);
   Renderer& initWriteFramebuffer();
+  std::unordered_map<std::string,int>& initReadFramebuffer(const Material& mat);
   std::unordered_map<std::string,int>& getUniformLocations(GLProgram& prog,Scene& scene,Camera& cam,Object3D& obj,Geometry& geom,Material& mat);
   Renderer& setUpCameraUniforms(std::unordered_map<std::string,int>& uniforms,Camera& cam);
   Renderer& setUpObjectUniforms(std::unordered_map<std::string,int>& uniforms,Object3D& obj);
@@ -126,6 +127,7 @@ public:
   Renderer& setUpSceneUniforms(std::unordered_map<std::string,int>& uniforms,Scene& scene);
   Renderer& setUpGlobalUniforms(std::unordered_map<std::string,int>& uniforms);
   Renderer& setUpTextureUniforms(std::unordered_map<std::string,int>& uniforms,Material& mat,std::unordered_map<std::string,int>& texUnits);
+  Renderer& setUpReadFramebufferUniforms(std::unordered_map<std::string,int>& uniforms,std::unordered_map<std::string,int>& texUnits);
   Renderer& drawGeometry(const Geometry& geom, Vao& vao);
   uint makeTexture(const Texture& texture);
   uint makeBuffer(GLenum target, const void* data, int size, GLenum usage = GL_STATIC_DRAW);

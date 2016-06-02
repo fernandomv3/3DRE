@@ -23,7 +23,7 @@ private:
   std::type_index type = std::type_index(typeid(unsigned short));
 public:
   Texture(const std::string& sourceFile);
-
+  Texture(int width, int height);
   const std::string& getUUID()const;
   const std::string& getSourceFile()const;
   const char* getImage()const;

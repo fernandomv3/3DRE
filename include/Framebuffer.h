@@ -14,12 +14,17 @@ private:
   uint fbo;
   std::string target;
   std::unordered_map< std::string,std::shared_ptr<Texture> > renderTargets;
+  bool initialized;
 public:
   Framebuffer(int width, int height);
   uint init();
   Framebuffer& addRenderTarget(std::string name, std::shared_ptr<Texture> texture);
   Framebuffer& removeTarget(std::string name);
   std::unordered_map< std::string,std::shared_ptr<Texture> >& getRenderTargets(std::string passName);
+  bool isInitialized() const;
+  uint getFbo()const;
+  int getWidth()const;
+  int getHeight()const;
 };
 
 

@@ -35,6 +35,11 @@ Material& Material::setSpecularMap(const std::shared_ptr<Texture> specularMap){
   this->specularMap = specularMap;
   return *this;
 }
+Material& Material::setShaderFiles(const std::string vf, const std::string ff){
+  this->vf = vf;
+  this->ff = ff;
+  return *this;
+}
 
 std::string Material::getUUID()const{ return uuid; }
 
@@ -47,9 +52,7 @@ std::shared_ptr<Texture> Material::getSpecularMap()const { return specularMap; }
 
 std::vector< std::pair <std::string,std::string> > Material::getShaders() const{
   std::vector< std::pair <std::string,std::string> > vec;
-  std::string vf = "vertex.glsl";
   vec.push_back(std::make_pair("vertexFile",vf));
-  std::string ff = "fragment.glsl";
   vec.push_back(std::make_pair("fragmentFile",ff));
   return vec;
 }
@@ -75,6 +78,6 @@ std::vector< std::tuple<std::string,std::string,int,void*> > Material::getUnifor
   std::vector< std::tuple<std::string,std::string,int,void*> > res;
   res.push_back(std::make_tuple("material.diffuse","4fv",1,diffuseColor.getElements().data()));
   res.push_back(std::make_tuple("material.specular","4fv",1,specularColor.getElements().data()));
-  res.push_back(std::make_tuple("material.specular","1f",1,&shininess));
+  res.push_back(std::make_tuple("material.shininess","1f",1,&shininess));
   return res;
 }
