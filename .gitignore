@@ -27,3 +27,4 @@
 *.out
 *.app
 3DRE
+bin/*

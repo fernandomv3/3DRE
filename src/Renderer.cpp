@@ -111,11 +111,6 @@ Renderer& Renderer::initWriteFramebuffer(){
         glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, texObj.texture, 0);
       }
     }
-    /*uint depthBuf;
-    glGenRenderbuffers(1,&depthBuf);
-    glBindRenderbuffer(GL_RENDERBUFFER,depthBuf);
-    glRenderbufferStorage(GL_RENDERBUFFER,GL_DEPTH_COMPONENT24,this->width,this->height);
-    glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthBuf);*/
 
     if(glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE){
       std::cout << "Framebuffer not created correctly" << std::endl;

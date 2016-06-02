@@ -107,7 +107,7 @@ int main(int argc, char** argv){
   auto out1 = std::make_shared<Texture>(Texture(SCREEN_WIDTH,SCREEN_HEIGHT));
   auto depth = std::make_shared<Texture>(Texture(SCREEN_WIDTH,SCREEN_HEIGHT));
   depth->setFormat("depth");
-  //writeFb->addRenderTarget("depth",depth);
+  writeFb->addRenderTarget("depth",depth);
   writeFb->addRenderTarget("color",out1);
 
   cam.perspectiveCamera(30.0,float(SCREEN_WIDTH)/float(SCREEN_HEIGHT),0.1,100.0);
