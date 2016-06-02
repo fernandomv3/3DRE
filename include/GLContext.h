@@ -1,38 +1,53 @@
 #ifndef GLCONTEXT_H
 #define GLCONTEXT_H
-#include <GL/glew.h>
+#define NO_SDL_GLEXT
 #include <SDL2/SDL.h>
+#include <GL/glew.h>
 #include <SDL2/SDL_opengl.h>
 
-void initializeContext(SDL_GLContext& context,SDL_Window* window, int SCREEN_WIDTH, int SCREEN_HEIGHT){
+#include <iostream>
+
+void checkSDLError(int line = -1){
+  const char *error = SDL_GetError();
+  if (*error != '\0'){
+    std::cerr << "SDL Error: " << error << std::endl;
+    if (line != -1)
+      std::cerr << " + line: " << line << std::endl;
+    SDL_ClearError();
+  }
+}
+
+void initializeContext(SDL_Window*& window,SDL_GLContext& context,int width,int height){
   if(SDL_Init(SDL_INIT_VIDEO) < 0){
     std::cerr << "SDL could not initialize! SDL_Error: " << SDL_GetError() << std::endl;
   }
   else{
+    SDL_ClearError();
     SDL_GL_SetAttribute( SDL_GL_CONTEXT_MAJOR_VERSION, 3 );
-    SDL_GL_SetAttribute( SDL_GL_CONTEXT_MINOR_VERSION, 2 );
+    SDL_GL_SetAttribute( SDL_GL_CONTEXT_MINOR_VERSION, 3 );
     SDL_GL_SetAttribute( SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE );
     SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
     SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 4);
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
     window = SDL_CreateWindow(
       "Engine",
-      SDL_WINDOWPOS_UNDEFINED,
-      SDL_WINDOWPOS_UNDEFINED,
-      SCREEN_WIDTH,
-      SCREEN_HEIGHT,
+      SDL_WINDOWPOS_CENTERED,
+      SDL_WINDOWPOS_CENTERED,
+      width,
+      height,
       SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL 
     );
-    if(window == NULL){
+    if(!window){
       std::cerr << "Window could not be created! SDL_Error: " << SDL_GetError() << std::endl;
     }else{
       context = SDL_GL_CreateContext( window );
-      if( context == NULL ){
+      if(!context){
         std::cerr << "OpenGL context could not be created! SDL Error: " << SDL_GetError() << std::endl;
       }
       else{
         glewExperimental = GL_TRUE;
         GLenum err = glewInit();
+        glGetError();//read error on glewInit()
         if (GLEW_OK != err)
         {
           std::cerr << "Error: " << glewGetErrorString(err) << std::endl;
@@ -46,7 +61,7 @@ void initializeContext(SDL_GLContext& context,SDL_Window* window, int SCREEN_WID
         if (version == NULL) {
           exit(-1);
         }
-        SDL_GL_SetSwapInterval(0);
+        SDL_GL_SetSwapInterval(1);
         std::cout << version << std::endl;
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LEQUAL);
@@ -62,6 +77,12 @@ void initializeContext(SDL_GLContext& context,SDL_Window* window, int SCREEN_WID
       }
     }
   }
+}
+
+void cleanUp(SDL_Window* window,SDL_GLContext& context){
+  SDL_GL_DeleteContext(context);
+  SDL_DestroyWindow(window);
+  SDL_Quit();
 }
 
 #endif
