@@ -42,9 +42,23 @@ int main(int argc, char** argv){
   cam.perspectiveCamera(30.0,float(SCREEN_WIDTH)/float(SCREEN_HEIGHT),0.1,100.0);
   cam.getPosition()[2] = 15;
 
+  auto geometry = std::make_shared<Geometry>(loadDataFromFile("robot-low-normal.dae"));
+  auto phongMat = std::make_shared<Material>(Material(Vec4(0.0,0.0,1.0,0.0)));
+  phongMat->setShininess(100);
+  phongMat->setShaderFiles("/home/fernando/Projects/engine/vertex.glsl","/home/fernando/Projects/engine/fragment.glsl");
+  auto robot = std::make_shared<Mesh>(Mesh(geometry,phongMat));
+
+  //auto texture = std::make_shared<Texture>(Texture("normalMap.jpg"));
+  //texture->setGamma(false);
+  //phongMat->setNormalMap(texture);
+  scene.add(robot);
+  robot->getRotation()[0] = -90;
+  robot->getRotation()[2] = 180;
+
   auto geom = std::make_shared<Geometry>(icosahedronGeometry());
   auto mat = std::make_shared<Material>(Material(Vec4(1.0,0.0,0.0,0.0)));
   mat->setShaderFiles("/home/fernando/Projects/engine/vertex.glsl","/home/fernando/Projects/engine/fragment.glsl");
+  //robot->getRotation()[0]=3.141592f * -90 /180.0f;
 
   auto obj = std::make_shared<Mesh>(Mesh(geom,mat));
   auto obj2 = std::make_shared<Mesh>(Mesh(geom,mat));
@@ -62,7 +76,7 @@ int main(int argc, char** argv){
   auto quadMat = std::make_shared<Material>(Material(Vec4(1.0,0.0,0.0,0.0)));
   quadMat->setShaderFiles("/home/fernando/Projects/engine/vertex2.glsl","/home/fernando/Projects/engine/fragment2.glsl");
   auto tex = std::make_shared<Texture>(Texture("checkers.png"));
-  //quadMat->setColorMap(tex);
+  quadMat->setColorMap(tex);
 
   auto quadObj = std::make_shared<Mesh>(Mesh(quad,quadMat));
   scene2.add(quadObj);
@@ -85,6 +99,7 @@ int main(int argc, char** argv){
     parentObj->getRotation()[2] += 75*dt;
     obj2->getRotation()[2] += 150*dt;
     obj->getRotation()[2] -= 150*dt;
+    robot->getRotation()[2] -= 150*dt;
     obj->setScale(Vec4(s,s,s,0.0));
     renderer.setWriteFramebuffer(writeFb);
     renderer.setReadFramebuffer(nullptr);

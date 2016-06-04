@@ -1,6 +1,7 @@
 #version 330
 
 in vec4 fNormal;
+in vec4 fWorldPosition;
 //in vec2 fUv;
 layout(location = 0) out vec4 color;
 uniform float gamma;
@@ -43,4 +44,5 @@ void main(){
 
 	color = light.color * material.diffuse *cosAng;
 	color = pow(color,vec4(1/gamma,1/gamma,1/gamma,1.0));
+	//color = (normalize(fWorldPosition) +1)/2;
 }

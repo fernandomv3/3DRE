@@ -1,5 +1,9 @@
 #include "Geometry.h"
 #include "MathUtils.h"
+#include "assimp/Importer.hpp"
+#include "assimp/scene.h"
+#include "assimp/mesh.h"
+#include "assimp/postprocess.h"
 
 Geometry::Geometry(){
   this->uuid = generateUUID();
@@ -55,7 +59,37 @@ std::vector< std::tuple<std::string,void*,int,int,std::type_index> > Geometry::g
   return vec;
 }
 
-Geometry loadDataFromFile(std::string filename){ return Geometry(); }
+Geometry loadDataFromFile(std::string filename){
+  Geometry result = Geometry();
+  Assimp::Importer importer;
+  const aiScene* scene = importer.ReadFile(filename,
+    aiProcess_Triangulate |
+    aiProcess_CalcTangentSpace 
+  );
+  aiMesh *mesh = scene->mMeshes[0];
+  for(unsigned int i = 0;i<mesh->mNumFaces;i++){
+    const aiFace& face = mesh->mFaces[i];
+    for(int j=0; j <3 ; j++){
+      int ind = face.mIndices[j];
+      aiVector3D vert = mesh->mVertices[ind];
+      result.vertices.push_back(vert.x);
+      result.vertices.push_back(vert.y);
+      result.vertices.push_back(vert.z);
+      aiVector3D norm = mesh->mNormals[ind];
+      result.normals.push_back(norm.x);
+      result.normals.push_back(norm.y);
+      result.normals.push_back(norm.z);
+      aiVector3D uv = mesh->mTextureCoords[0][ind];
+      result.texCoords.push_back(uv.x);
+      result.texCoords.push_back(1 - uv.y);
+      aiVector3D tang = mesh->mTangents[ind];
+      result.tangents.push_back(tang.x);
+      result.tangents.push_back(tang.y);
+      result.tangents.push_back(tang.z);
+    }
+  }
+  return result;
+}
 
 Geometry quadGeometry(int size){
   float vertices[18] = {
