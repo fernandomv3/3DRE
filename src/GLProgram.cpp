@@ -11,7 +11,7 @@
 GLProgram::GLProgram(){
   this->program = 0;
   this->uniforms = std::unordered_map<std::string,int>();
-  for(int i = GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS -1; i>=0; i--){
+  for(int i = 8/*GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS*/ -1; i>=0; i--){
     this->freeTexUnits.push(i);
   }
 }
@@ -93,7 +93,7 @@ std::vector<Shader>& GLProgram::getShaders(){
   return this->shaders;
 }
 
-std::unordered_map<std::string,int>& GLProgram::getAttrLoc(){ return attrLoc; }
+std::unordered_map<std::string,Attrib>& GLProgram::getAttrLoc(){ return attrLoc; }
 
 std::unordered_map<std::string,int>& GLProgram::getOutputLoc(){ return outputLoc; }
 

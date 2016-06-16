@@ -138,7 +138,7 @@ Mat4 Mat4::rotationFromQuaternion(const Quaternion& q){
 }
 
 std::array<float,16>& Mat4::getElements(){
-  return e;
+  return this->e;
 }
 
 Mat4 operator*(const Mat4& m1, const Mat4& m2){

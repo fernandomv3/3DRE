@@ -7,11 +7,14 @@ private:
   Vec4 color;
   float intensity;
   float attenuation;
+  Mat4 lightMatrix;
 public:
   Light(const Vec4 color = Vec4(), float intensity = 1.0, float attenuation = 0.0);
   Vec4& getColor();
   float getIntensity()const;
   float getAttenuation()const;
+  Mat4 getLightMatrix()const;
+  Light& setLightMatrix(const Mat4 matrix);
 };
 
 #endif

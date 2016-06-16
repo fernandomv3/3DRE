@@ -16,6 +16,7 @@ private:
   std::vector<float> position;
   std::vector<float> attenuation;
   std::vector<float> intensity;
+  std::vector<float> matrices;
 public:
   Scene();
   std::string getUUID()const;

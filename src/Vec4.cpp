@@ -41,7 +41,7 @@ Vec4& Vec4::operator/=(const float t){
 }
 
 float Vec4::length() const{
-  return sqrt(this->length());
+  return sqrt(this->squaredLength());
 }
 float Vec4::squaredLength() const{
   return e[0]*e[0] + e[1]*e[1] + e[2]*e[2] +e[3]*e[3];

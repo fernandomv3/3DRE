@@ -55,7 +55,7 @@ GLProgram& Renderer::initProgram(const Material& mat, const Geometry& geom){
     auto &attrLoc = program.getAttrLoc();
     for(auto vbo : bufferObj.vbo){
       if(vbo.first == "index") continue;
-      attrLoc[vbo.first] = glGetAttribLocation(program.getProgram(),vbo.first.data());
+      attrLoc[vbo.first].location = glGetAttribLocation(program.getProgram(),vbo.first.data());
     }
   }
   return program;
@@ -63,30 +63,26 @@ GLProgram& Renderer::initProgram(const Material& mat, const Geometry& geom){
 
 std::unordered_map<std::string,int>& Renderer::initTextures(const Material& mat){
   auto &program = this->programs[mat.getUUID()];
-  auto& texUnits = program.getTexUnits();
-  if(texUnits.empty()){  
-    auto tex = mat.getTextures("init");
-    for(auto t : tex){
-      auto& texObj = this->textures[t.second->getUUID()];
-      if(t.second->getSourceFile() != "") t.second->loadFile();
-      texObj.texture = makeTexture(*(t.second));break;
-      texObj.sampler = makeSampler(*(t.second));
-      texUnits[t.first] = program.getFreeTextureUnit();
-    }
+  auto &texUnits = program.getTexUnits(); 
+  auto tex = mat.getTextures("init");
+  for(auto t : tex){
+    auto& texObj = this->textures[t.second->getUUID()];
+    if(t.second->getSourceFile() != "") t.second->loadFile();
+    if(texObj.texture == 0)texObj.texture = makeTexture(*(t.second));
+    if(texObj.sampler == 0)texObj.sampler = makeSampler(*(t.second));
+    if(texUnits.count(t.first) == 0)texUnits[t.first] = program.getFreeTextureUnit();
   }
   return texUnits;
 }
 
 std::unordered_map<std::string,int>& Renderer::initReadFramebuffer(const Material& mat){
   auto &program = this->programs[mat.getUUID()];
-  auto& texUnits = program.getTexUnits();
+  auto &texUnits = program.getTexUnits();
   auto tex = readFramebuffer->getRenderTargets("init");
   for(auto t : tex){
     auto& texObj = this->textures[t.second->getUUID()];
-    if(texObj.sampler == 0){
-      texObj.sampler = makeSampler(*(t.second));
-      texUnits[t.first] = program.getFreeTextureUnit();
-    }
+    if(texObj.sampler == 0) texObj.sampler = makeSampler(*(t.second));
+    if(texUnits.count(t.first) == 0) texUnits[t.first] = program.getFreeTextureUnit();
   }
   return texUnits;
 }
@@ -116,7 +112,12 @@ Renderer& Renderer::initWriteFramebuffer(){
       std::cout << "Framebuffer not created correctly" << std::endl;
       exit(0);
     }
-    glDrawBuffers(attachments.size(),attachments.data());
+    if(attachments.size() != 0){
+      glDrawBuffers(attachments.size(),attachments.data());
+    }
+    else{
+      glDrawBuffer(GL_NONE);
+    }
     glBindFramebuffer(GL_FRAMEBUFFER,0);
   }
   return *this;
@@ -126,20 +127,22 @@ Renderer& Renderer::setUpVertexAttributes(GLProgram& prog, Vao& vao){
   if(!(vao.initialized)){
     for(auto vbo : vao.vbo){
       if(vbo.first == "index")continue;
+      Attrib& loc = prog.getAttrLoc()[vbo.first];
+      if(loc.location == -1) continue;
+      if(loc.initialized) continue;
       glBindBuffer(GL_ARRAY_BUFFER,vbo.second.buffer);
-      int loc = prog.getAttrLoc()[vbo.first];
-      if(loc == -1) continue;
       glVertexAttribPointer(
-        loc,
+        loc.location,
         vbo.second.numComponents,
         vbo.second.type,
         GL_FALSE,
         0,
         (void*)0
       );
-      glEnableVertexAttribArray(loc);  
+      glEnableVertexAttribArray(loc.location);
+      loc.initialized = true; 
     }
-    vao.initialized = true;
+    //vao.initialized = true;
   }
   return *this;
 }
@@ -192,8 +195,8 @@ Renderer& Renderer::setUpMaterialUniforms(std::unordered_map<std::string,int>& u
   return *this;
 }
 
-Renderer& Renderer::setUpSceneUniforms(std::unordered_map<std::string,int>& uniforms,Scene& scene){
-  auto uniformData = scene.getUniforms("forward");
+Renderer& Renderer::setUpSceneUniforms(std::string passName,std::unordered_map<std::string,int>& uniforms,Scene& scene){
+  auto uniformData = scene.getUniforms(passName);
   for(auto& u : uniformData){
     updateUniform(uniforms[std::get<0>(u)],std::get<2>(u),std::get<1>(u),std::get<3>(u));
   }
@@ -212,9 +215,9 @@ Renderer& Renderer::setUpTextureUniforms(std::unordered_map<std::string,int>& un
   auto matTextures = mat.getTextures("forward");
   for(auto& texture : matTextures){
     auto& texObj = textures[texture.second->getUUID()];
-    glUniform1i(uniforms[texture.first],texUnits[texture.first]);
     glActiveTexture(GL_TEXTURE0 + texUnits[texture.first]);
     glBindTexture(GLTextureTarget[texture.second->getTarget()],texObj.texture);
+    glUniform1i(uniforms[texture.first],texUnits[texture.first]);
     glBindSampler(texUnits[texture.first],texObj.sampler);
   }
   return *this;
@@ -272,7 +275,6 @@ Renderer& Renderer::render(Scene& scene, Camera& cam,std::string passName){
 
     if(readFramebuffer)initReadFramebuffer(*mat);
     auto& uniforms = getUniformLocations(program,scene,cam,*obj,*geom,*mat);
-
     glUseProgram(program.getProgram());
 
     glBindVertexArray(bufferObj.vao);
@@ -288,7 +290,7 @@ Renderer& Renderer::render(Scene& scene, Camera& cam,std::string passName){
     setUpMaterialUniforms(uniforms,*mat);
     setUpTextureUniforms(uniforms,*mat, texUnits);
     if(readFramebuffer)setUpReadFramebufferUniforms(uniforms,texUnits);
-    setUpSceneUniforms(uniforms,scene);
+    setUpSceneUniforms(passName,uniforms,scene);
     setUpGlobalUniforms(uniforms);
 
     drawGeometry(*geom,bufferObj);
@@ -310,6 +312,16 @@ Renderer& Renderer::setReadFramebuffer(std::shared_ptr<Framebuffer> fb){
 
 Renderer& Renderer::setWriteFramebuffer(std::shared_ptr<Framebuffer> fb){
   this->writeFramebuffer = fb;
+  return *this;
+}
+
+int Renderer::getFreeTextureUnit(){
+  int res = freeTexUnits.top();
+  freeTexUnits.pop();
+  return res;
+}
+Renderer& Renderer::releaseTextureUnit(int unit){
+  freeTexUnits.push(unit);
   return *this;
 }
 
@@ -343,6 +355,7 @@ uint Renderer::makeTexture(const Texture& texture){
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
   }
+  glBindTexture(target,0);
   return tex;
 }
 

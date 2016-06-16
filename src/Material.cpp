@@ -59,6 +59,7 @@ std::vector< std::pair <std::string,std::string> > Material::getShaders() const{
 
 std::unordered_map< std::string,std::shared_ptr<Texture> > Material::getTextures(std::string passName) const{
   auto result = std::unordered_map< std::string,std::shared_ptr<Texture> >();
+  if (passName == "shadow") return result; 
   if(colorMap != nullptr){
     colorMap->loadFile();
     result["colorMap"] = colorMap;

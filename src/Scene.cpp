@@ -41,13 +41,17 @@ std::vector< std::tuple<std::string,std::string,int,void*> > Scene::getUniforms(
   c.reserve(numLights*4);
   std::vector<float> p;
   p.reserve(numLights*4);
+  std::vector<float> m;
+  m.reserve(numLights*16);
   std::vector<float> a;
   a.reserve(numLights);
   std::vector<float> i;
   i.reserve(numLights);
   for(auto light : lights){
-    c.insert(std::end(c), std::begin(light->getColor().getElements()), std::end(light->getColor().getElements()));
-    p.insert(std::end(p), std::begin(light->getPosition().getElements()), std::end(light->getPosition().getElements()));
+    auto lightMatrixElements = light->getLightMatrix().getElements();
+    c.insert(std::end(c), light->getColor().getElements().begin(), light->getColor().getElements().end());
+    p.insert(std::end(p), light->getPosition().getElements().begin(), light->getPosition().getElements().end());
+    m.insert(std::end(m), lightMatrixElements.begin(),lightMatrixElements.end());
     a.push_back(light->getAttenuation());
     i.push_back(light->getIntensity());
   }
@@ -55,10 +59,12 @@ std::vector< std::tuple<std::string,std::string,int,void*> > Scene::getUniforms(
   position.swap(p);
   attenuation.swap(a);
   intensity.swap(i);
+  matrices.swap(m);
   if(!color.empty()) res.push_back(std::make_tuple("light.color","4fv",numLights,color.data()));
   if(!position.empty())res.push_back(std::make_tuple("light.position","4fv",numLights,position.data()));
   if(!attenuation.empty())res.push_back(std::make_tuple("light.attenuation","1f",numLights,attenuation.data()));
   if(!intensity.empty())res.push_back(std::make_tuple("light.intensity","1f",numLights,intensity.data()));
+  if(!matrices.empty())res.push_back(std::make_tuple("light.depthMatrix","m4fv",numLights,matrices.data()));
   res.push_back(std::make_tuple("ambient","4f",1,static_cast<void*>(ambientLight.getColor().getElements().data())));
   return res;
 }

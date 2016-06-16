@@ -1,5 +1,5 @@
 #ifndef RENDERER_H
-#define RENDERER_h
+#define RENDERER_H
 #include "GL/glew.h"
 
 #include "Scene.h"
@@ -11,6 +11,7 @@
 #include <typeindex>
 #include <string>
 #include <memory>
+#include <stack>
 
 struct vbo{
   uint buffer;
@@ -34,6 +35,7 @@ typedef struct gltexture GLTexture;
 
 class Renderer{
 private:
+  std::stack<int> freeTexUnits;
   std::unordered_map<std::string,Vao> vao;
   std::unordered_map<std::string,GLProgram> programs;
   std::unordered_map<std::string,GLTexture> textures;
@@ -110,6 +112,8 @@ private:
 public:
   Renderer(int width,int height);
   ~Renderer();
+  int getFreeTextureUnit();
+  Renderer& releaseTextureUnit(int unit);
   Renderer& setTime(float ms);
   Renderer& setReadFramebuffer(std::shared_ptr<Framebuffer> fb);
   Renderer& setWriteFramebuffer(std::shared_ptr<Framebuffer> fb);
@@ -124,7 +128,7 @@ public:
   Renderer& setUpCameraUniforms(std::unordered_map<std::string,int>& uniforms,Camera& cam);
   Renderer& setUpObjectUniforms(std::unordered_map<std::string,int>& uniforms,Object3D& obj);
   Renderer& setUpMaterialUniforms(std::unordered_map<std::string,int>& uniforms,Material& mat);
-  Renderer& setUpSceneUniforms(std::unordered_map<std::string,int>& uniforms,Scene& scene);
+  Renderer& setUpSceneUniforms(std::string passName,std::unordered_map<std::string,int>& uniforms,Scene& scene);
   Renderer& setUpGlobalUniforms(std::unordered_map<std::string,int>& uniforms);
   Renderer& setUpTextureUniforms(std::unordered_map<std::string,int>& uniforms,Material& mat,std::unordered_map<std::string,int>& texUnits);
   Renderer& setUpReadFramebufferUniforms(std::unordered_map<std::string,int>& uniforms,std::unordered_map<std::string,int>& texUnits);

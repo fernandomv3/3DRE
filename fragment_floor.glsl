@@ -12,7 +12,6 @@ uniform int screenWidth;
 uniform int screenHeight;
 uniform sampler2D normalMap;
 uniform sampler2D colorMap;
-uniform sampler2D specularMap;
 uniform sampler2D fbdepthMap;
 uniform vec4 ambient;
 
@@ -41,16 +40,6 @@ float calculateCosAngIncidence(in vec4 direction, in vec4 normal,in float warpFa
 	return cosAngIncidence;
 }
 
-float calculateBlinnPhongTerm(in vec4 direction,vec4 normal, in vec4 viewDirection, in float shininess, out float cosAngIncidence){
-  cosAngIncidence = calculateCosAngIncidence(normal,direction,0);
-  vec4 halfAngle = normalize(direction + viewDirection);
-  float blinnPhongTerm = dot(normal, halfAngle);
-  blinnPhongTerm = clamp(blinnPhongTerm, 0, 1);
-  blinnPhongTerm = cosAngIncidence != 0.0 ? blinnPhongTerm : 0.0;
-  blinnPhongTerm = pow(blinnPhongTerm, shininess);
-  return blinnPhongTerm;
-}
-
 vec4 calculateNormal(in vec4 vNormal,in vec4 vTangent, in vec2 uv ,in sampler2D normalMap){
   vec3 normal = normalize(vNormal).xyz;
   vec3 tangent = normalize(vTangent).xyz;
@@ -69,7 +58,7 @@ float calculateShadowFactor(in vec4 lightSpacePos){
   if(uv.x > 1.0 || uv.y > 1.0 || uv.x < 0.0 || uv.y < 0.0) return 1.0;
   float depth = texture(fbdepthMap,uv.xy).x;
   if (depth < uv.z + 0.00001){
-    return 0.4;
+    return 0.3;
   }
   return 1.0;
 }
@@ -79,14 +68,9 @@ uniform Light light;
 
 void main(){
 	vec4 normal = calculateNormal(fNormal,fTangent,fUv,normalMap);
-	float cosAng;
-	vec4 diffuse = material.diffuse;
-	//diffuse = texture(colorMap,fUv);
-	vec4 specular = texture(specularMap,fUv);
-	vec4 viewDirection = normalize(-fWorldPosition);
-	float blinnPhongTerm = calculateBlinnPhongTerm(normalize(light.position),normal,viewDirection,material.shininess,cosAng);
+	vec4 diffuseColor = texture(colorMap,fUv);
+	float cosAng = calculateCosAngIncidence(normalize(light.position),normalize(normal),0.0);
 	float shadowFactor = calculateShadowFactor(fDepthMapPosition);
-	color = shadowFactor * light.color * diffuse *cosAng;
-	color += shadowFactor * light.color * specular * blinnPhongTerm;
+	color = shadowFactor * light.color * diffuseColor *cosAng;
 	//color = pow(color,vec4(1/gamma,1/gamma,1/gamma,1.0));
 }

@@ -14,12 +14,18 @@ struct shader{
 };
 typedef struct shader Shader;
 
+struct attrib{
+  int location = -1;
+  bool initialized = false;
+};
+typedef struct attrib Attrib;
+
 class GLProgram{
 private:
   int program;
   std::stack<int> freeTexUnits;
   std::unordered_map<std::string,int> uniforms;
-  std::unordered_map<std::string,int> attrLoc;
+  std::unordered_map<std::string,Attrib> attrLoc;
   std::unordered_map<std::string,int> texUnits;
   std::unordered_map<std::string,int> outputLoc;
   std::vector<Shader> shaders;
@@ -32,7 +38,7 @@ public:
   std::unordered_map<std::string,int>& getUniforms();
   std::vector<Shader>& getShaders();
   int makeProgram();
-  std::unordered_map<std::string,int>& getAttrLoc();
+  std::unordered_map<std::string,Attrib>& getAttrLoc();
   std::unordered_map<std::string,int>& getOutputLoc();
   std::unordered_map<std::string,int>& getTexUnits();
   int getFreeTextureUnit();

@@ -50,11 +50,11 @@ std::vector< std::tuple<std::string,void*,int,int,std::type_index> > Geometry::g
     vec.push_back(std::make_tuple("index",(void*)elements.data(),elements.size() * sizeof(ushort) ,1,std::type_index(typeid(ushort))));
   if(!vertices.empty())
     vec.push_back(std::make_tuple("vPosition",(void*)vertices.data(),vertices.size() * sizeof(float) ,3,std::type_index(typeid(float))));
-  if(!normals.empty())
+  if(!normals.empty() && passName != "shadow")
     vec.push_back(std::make_tuple("vNormal",(void*)normals.data(),normals.size() * sizeof(float) ,3,std::type_index(typeid(float))));
-  if(!texCoords.empty())
+  if(!texCoords.empty() && passName != "shadow")
     vec.push_back(std::make_tuple("vUv",(void*)texCoords.data(),texCoords.size() * sizeof(float) ,2,std::type_index(typeid(float))));
-  if(!tangents.empty())
+  if(!tangents.empty() && passName != "shadow")
     vec.push_back(std::make_tuple("vTangent",(void*)tangents.data(),tangents.size() * sizeof(float) ,3,std::type_index(typeid(float))));
   return vec;
 }
@@ -102,25 +102,34 @@ Geometry quadGeometry(int size){
   };
   for(int i=0;i<18;i++){ vertices[i] *= size; }
   float normals[18] = {
-    0.0, 0.0, -1.0,
-    0.0, 0.0, -1.0,
-    0.0, 0.0, -1.0,
-    0.0, 0.0, -1.0,
-    0.0, 0.0, -1.0,
-    0.0, 0.0, -1.0
+    0.0, 0.0, 1.0,
+    0.0, 0.0, 1.0,
+    0.0, 0.0, 1.0,
+    0.0, 0.0, 1.0,
+    0.0, 0.0, 1.0,
+    0.0, 0.0, 1.0
   };
   float texCoords[12] ={
-    1.0,1.0,
     1.0,0.0,
-    0.0,0.0,
-    0.0,1.0,
     1.0,1.0,
-    0.0,0.0
+    0.0,1.0,
+    0.0,0.0,
+    1.0,0.0,
+    0.0,1.0
+  };
+  float tangents[18] = {
+    0.0, 1.0, 0.0,
+    0.0, 1.0, 0.0,
+    0.0, 1.0, 0.0,
+    0.0, 1.0, 0.0,
+    0.0, 1.0, 0.0,
+    0.0, 1.0, 0.0
   };
 
   Geometry geom = Geometry();
   geom.setVertices(std::vector<float>(vertices,vertices+18));
   geom.setNormals(std::vector<float>(normals,normals+18));
+  geom.setTangents(std::vector<float>(tangents,tangents+18));
   geom.setTexCoords(std::vector<float>(texCoords,texCoords+12));
   return geom;
 }
