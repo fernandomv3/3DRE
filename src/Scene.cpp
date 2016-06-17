@@ -9,6 +9,16 @@ Scene::Scene(){
 std::string Scene::getUUID()const { return uuid; }
 const std::vector< std::shared_ptr<Object3D> >& Scene::getObjects()const { return objects; }
 const std::vector< std::shared_ptr<Light> >& Scene::getLights()const { return lights; }
+
+Scene& Scene::setSsaoNoise(std::shared_ptr<Texture> ssaoNoise){
+  this->ssaoNoise = ssaoNoise;
+  return *this;
+}
+Scene& Scene::setSsaoKernel(std::vector<Vec4> ssaoKernel){
+  this->ssaoKernel = ssaoKernel;
+  return *this;
+}
+
 Scene& Scene::add(std::shared_ptr<Light> light){
   lights.push_back(light);
   return *this;
@@ -47,6 +57,7 @@ std::vector< std::tuple<std::string,std::string,int,void*> > Scene::getUniforms(
   a.reserve(numLights);
   std::vector<float> i;
   i.reserve(numLights);
+
   for(auto light : lights){
     auto lightMatrixElements = light->getLightMatrix().getElements();
     c.insert(std::end(c), light->getColor().getElements().begin(), light->getColor().getElements().end());
@@ -66,5 +77,27 @@ std::vector< std::tuple<std::string,std::string,int,void*> > Scene::getUniforms(
   if(!intensity.empty())res.push_back(std::make_tuple("light.intensity","1f",numLights,intensity.data()));
   if(!matrices.empty())res.push_back(std::make_tuple("light.depthMatrix","m4fv",numLights,matrices.data()));
   res.push_back(std::make_tuple("ambient","4f",1,static_cast<void*>(ambientLight.getColor().getElements().data())));
+  
+  int kernelSize = ssaoKernel.size();
+  std::vector<float> k;
+  k.reserve(kernelSize *3);
+  for(auto v : ssaoKernel){
+    k.push_back(v[0]);
+    k.push_back(v[1]);
+    k.push_back(v[2]);
+  }
+  flatSsaoKernel.swap(k);
+  if(!flatSsaoKernel.empty()) res.push_back(std::make_tuple("ssaoKernel","3fv",kernelSize,flatSsaoKernel.data()));
+  
   return res;
+}
+
+std::unordered_map< std::string,std::shared_ptr<Texture> > Scene::getTextures(std::string passName) const{
+  auto result = std::unordered_map< std::string,std::shared_ptr<Texture> >();
+  if (passName == "shadow") return result; 
+  if(ssaoNoise != nullptr){
+    result["ssaoNoise"] = ssaoNoise;
+  }
+
+  return result;
 }
