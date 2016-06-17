@@ -18,8 +18,14 @@ int Framebuffer::getHeight()const{ return height; }
 
 Framebuffer& Framebuffer::addRenderTarget(std::string name, std::shared_ptr<Texture> texture){
   renderTargets[name] = texture;
+  insertOrder.push_back(name);
   return *this;
 }
+
+std::vector<std::string> Framebuffer::getTargetsOrder() const{
+  return this->insertOrder;
+}
+
 Framebuffer& Framebuffer::removeTarget(std::string name){
   return *this;
 }

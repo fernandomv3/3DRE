@@ -40,13 +40,28 @@ int main(int argc, char** argv){
   auto depthMaterial = std::make_shared<Material>(Material());
   depthMaterial->setShaderFiles("/home/fernando/Projects/engine/shaders/vertex-transform.glsl","/home/fernando/Projects/engine/shaders/fragment-shadow.glsl");
 
+  //create gBuffer
+
+  auto gBuffer = std::make_shared<Framebuffer>(Framebuffer(SCREEN_WIDTH,SCREEN_HEIGHT));
+  auto positionTarget = std::make_shared<Texture>(Texture(SCREEN_WIDTH,SCREEN_HEIGHT));
+  auto normalTarget = std::make_shared<Texture>(Texture(SCREEN_WIDTH,SCREEN_HEIGHT));
+  auto diffuseTarget = std::make_shared<Texture>(Texture(SCREEN_WIDTH,SCREEN_HEIGHT));
+  auto specularTarget = std::make_shared<Texture>(Texture(SCREEN_WIDTH,SCREEN_HEIGHT));
+  auto depthTarget = std::make_shared<Texture>(Texture(SCREEN_WIDTH,SCREEN_HEIGHT));
+  depthTarget->setFormat("depth");
+  gBuffer->addRenderTarget("position", positionTarget);
+  gBuffer->addRenderTarget("normal", normalTarget);
+  gBuffer->addRenderTarget("diffuse",diffuseTarget);
+  gBuffer->addRenderTarget("specular",specularTarget);
+  gBuffer->addRenderTarget("depth",depthTarget);
+
   //create post-process framebuffer
-  auto writeFb = std::make_shared<Framebuffer>(Framebuffer(SCREEN_WIDTH,SCREEN_HEIGHT));
+  /*auto writeFb = std::make_shared<Framebuffer>(Framebuffer(SCREEN_WIDTH,SCREEN_HEIGHT));
   auto out1 = std::make_shared<Texture>(Texture(SCREEN_WIDTH,SCREEN_HEIGHT));
   auto depth = std::make_shared<Texture>(Texture(SCREEN_WIDTH,SCREEN_HEIGHT));
   depth->setFormat("depth");
   writeFb->addRenderTarget("depth",depth);
-  writeFb->addRenderTarget("color",out1);
+  writeFb->addRenderTarget("color",out1);*/
 
   //init cameras
   cam.perspectiveCamera(30.0,float(SCREEN_WIDTH)/float(SCREEN_HEIGHT),0.1,100.0);
@@ -57,7 +72,7 @@ int main(int argc, char** argv){
   //add robot
   auto geometry = std::make_shared<Geometry>(loadDataFromFile("/home/fernando/Projects/engine/models/robot-low-normal.dae"));
   auto phongMat = std::make_shared<Material>(Material(Vec4(0.5,0.5,0.5,0.0),Vec4(1.0,1.0,1.0,0.0),20));
-  phongMat->setShaderFiles("/home/fernando/Projects/engine/shaders/vertex.glsl","/home/fernando/Projects/engine/shaders/fragment.glsl");
+  phongMat->setShaderFiles("/home/fernando/Projects/engine/shaders/vertex_deferred.glsl","/home/fernando/Projects/engine/shaders/fragment_robot_deferred.glsl");
   auto robot = std::make_shared<Mesh>(Mesh(geometry,phongMat));
 
   auto texture = std::make_shared<Texture>(Texture("/home/fernando/Projects/engine/textures/normalMap.jpg"));
@@ -77,12 +92,12 @@ int main(int argc, char** argv){
   auto quad = std::make_shared<Geometry>(quadGeometry());//shared geometry
 
   auto quadMat = std::make_shared<Material>(Material(Vec4(0.5,0.5,0.5,0.0)));
-  quadMat->setShaderFiles("/home/fernando/Projects/engine/shaders/vertex2.glsl","/home/fernando/Projects/engine/shaders/fxaa.glsl");
+  quadMat->setShaderFiles("/home/fernando/Projects/engine/shaders/vertex2.glsl","/home/fernando/Projects/engine/shaders/deferredLightning.glsl");
   auto quadObj = std::make_shared<Mesh>(Mesh(quad,quadMat));
   scene2.add(quadObj);
   //add floor
   auto floorMat = std::make_shared<Material>(Material(Vec4(0.5,0.5,0.5,0.0)));
-  floorMat->setShaderFiles("/home/fernando/Projects/engine/shaders/vertex.glsl","/home/fernando/Projects/engine/shaders/fragment_floor.glsl");
+  floorMat->setShaderFiles("/home/fernando/Projects/engine/shaders/vertex_deferred.glsl","/home/fernando/Projects/engine/shaders/fragment_floor_deferred.glsl");
 
   auto floorQuad = std::make_shared<Mesh>(Mesh(quad,floorMat));
   auto tex = std::make_shared<Texture>(Texture("/home/fernando/Projects/engine/textures/sand.jpg"));
@@ -123,19 +138,22 @@ int main(int argc, char** argv){
     robot->setMaterial(depthMaterial);
     floorQuad->setMaterial(depthMaterial);
     renderer.setWriteFramebuffer(shadowFb);
-    renderer.setReadFramebuffer(nullptr);    
+    renderer.setReadFramebuffer(nullptr);
+    //glCullFace(GL_FRONT);
     renderer.render(scene,lightCam,"shadow");
+    //glCullFace(GL_BACK);
     dirlight->setLightMatrix(cross(lightCam.getProjectionMatrix(),lightCam.getWorldMatrix()));
 
     robot->setMaterial(phongMat);
     floorQuad->setMaterial(floorMat);
     renderer.setWriteFramebuffer(nullptr);
-    renderer.setWriteFramebuffer(writeFb);
+    //renderer.setWriteFramebuffer(writeFb);
+    renderer.setWriteFramebuffer(gBuffer);
     renderer.setReadFramebuffer(shadowFb);
     renderer.render(scene,cam,"forward");
     
     renderer.setWriteFramebuffer(nullptr);
-    renderer.setReadFramebuffer(writeFb);
+    renderer.setReadFramebuffer(gBuffer);
     renderer.render(scene2,cam,"second");
     SDL_GL_SwapWindow(window);
   }

@@ -92,14 +92,16 @@ Renderer& Renderer::initWriteFramebuffer(){
     int fbo = writeFramebuffer->init();
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
     auto tex = writeFramebuffer->getRenderTargets("init");
+    auto order = writeFramebuffer->getTargetsOrder();
     int i = 0;
     std::vector<uint> attachments;
-    for(auto t : tex){
-      auto& texObj = this->textures[t.second->getUUID()];
+    for(auto n : order){
+      auto& t = tex[n];
+      auto& texObj = this->textures[t->getUUID()];
       if(texObj.texture == 0){
-        texObj.texture = makeTexture(*(t.second));
+        texObj.texture = makeTexture(*(t));
       }
-      if(t.second->getFormat()!= "depth" && t.second->getFormat()!= "depth_stencil" ){
+      if(t->getFormat()!= "depth" && t->getFormat()!= "depth_stencil" ){
         glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 +i, texObj.texture, 0);
         attachments.push_back(GL_COLOR_ATTACHMENT0 +i);
         ++i;  
