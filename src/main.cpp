@@ -21,8 +21,8 @@ bool handleEvents(){
 }
 
 int main(int argc, char** argv){
-  const int SCREEN_WIDTH = 320;
-  const int SCREEN_HEIGHT = 240;
+  const int SCREEN_WIDTH = 800;
+  const int SCREEN_HEIGHT = 600;
 
   SDL_Window* window = NULL;
   SDL_GLContext context = NULL;
@@ -56,7 +56,7 @@ int main(int argc, char** argv){
 
   //add robot
   auto geometry = std::make_shared<Geometry>(loadDataFromFile("/home/fernando/Projects/engine/robot-low-normal.dae"));
-  auto phongMat = std::make_shared<Material>(Material(Vec4(0.5,0.5,0.5,0.0),Vec4(1.0,1.0,1.0,0.0),100));
+  auto phongMat = std::make_shared<Material>(Material(Vec4(0.5,0.5,0.5,0.0),Vec4(1.0,1.0,1.0,0.0),20));
   phongMat->setShaderFiles("/home/fernando/Projects/engine/vertex.glsl","/home/fernando/Projects/engine/fragment.glsl");
   auto robot = std::make_shared<Mesh>(Mesh(geometry,phongMat));
 

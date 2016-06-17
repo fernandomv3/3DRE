@@ -87,6 +87,6 @@ void main(){
 	float blinnPhongTerm = calculateBlinnPhongTerm(normalize(light.position),normal,viewDirection,material.shininess,cosAng);
 	float shadowFactor = calculateShadowFactor(fDepthMapPosition);
 	color = shadowFactor * light.color * diffuse *cosAng;
-	color += shadowFactor * light.color * specular * blinnPhongTerm;
+	color += shadowFactor * light.color * (material.specular * specular) * blinnPhongTerm;
 	//color = pow(color,vec4(1/gamma,1/gamma,1/gamma,1.0));
 }
