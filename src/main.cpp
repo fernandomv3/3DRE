@@ -38,7 +38,7 @@ int main(int argc, char** argv){
   depthMap->setFormat("depth");
   shadowFb->addRenderTarget("depthMap",depthMap);
   auto depthMaterial = std::make_shared<Material>(Material());
-  depthMaterial->setShaderFiles("/home/fernando/Projects/engine/vertex-transform.glsl","/home/fernando/Projects/engine/fragment-shadow.glsl");
+  depthMaterial->setShaderFiles("/home/fernando/Projects/engine/shaders/vertex-transform.glsl","/home/fernando/Projects/engine/shaders/fragment-shadow.glsl");
 
   //create post-process framebuffer
   auto writeFb = std::make_shared<Framebuffer>(Framebuffer(SCREEN_WIDTH,SCREEN_HEIGHT));
@@ -55,17 +55,17 @@ int main(int argc, char** argv){
   lightCam.setTarget(std::make_shared<Vec4>(Vec4(0.0,0.0,0.0,1.0)));
 
   //add robot
-  auto geometry = std::make_shared<Geometry>(loadDataFromFile("/home/fernando/Projects/engine/robot-low-normal.dae"));
+  auto geometry = std::make_shared<Geometry>(loadDataFromFile("/home/fernando/Projects/engine/models/robot-low-normal.dae"));
   auto phongMat = std::make_shared<Material>(Material(Vec4(0.5,0.5,0.5,0.0),Vec4(1.0,1.0,1.0,0.0),20));
-  phongMat->setShaderFiles("/home/fernando/Projects/engine/vertex.glsl","/home/fernando/Projects/engine/fragment.glsl");
+  phongMat->setShaderFiles("/home/fernando/Projects/engine/shaders/vertex.glsl","/home/fernando/Projects/engine/shaders/fragment.glsl");
   auto robot = std::make_shared<Mesh>(Mesh(geometry,phongMat));
 
-  auto texture = std::make_shared<Texture>(Texture("/home/fernando/Projects/engine/normalMap.jpg"));
+  auto texture = std::make_shared<Texture>(Texture("/home/fernando/Projects/engine/textures/normalMap.jpg"));
   texture->setGamma(false);
   texture->setNMipmaps(0);
   texture->setFiltering(std::make_pair("nearest","nearest"));
   phongMat->setNormalMap(texture);
-  auto specTexture = std::make_shared<Texture>(Texture("/home/fernando/Projects/engine/perlin.png"));
+  auto specTexture = std::make_shared<Texture>(Texture("/home/fernando/Projects/engine/textures/perlin.png"));
   specTexture->setGamma(false);
   specTexture->setNMipmaps(0);
   specTexture->setFiltering(std::make_pair("nearest","nearest"));
@@ -77,16 +77,16 @@ int main(int argc, char** argv){
   auto quad = std::make_shared<Geometry>(quadGeometry());//shared geometry
 
   auto quadMat = std::make_shared<Material>(Material(Vec4(0.5,0.5,0.5,0.0)));
-  quadMat->setShaderFiles("/home/fernando/Projects/engine/vertex2.glsl","/home/fernando/Projects/engine/fxaa.glsl");
+  quadMat->setShaderFiles("/home/fernando/Projects/engine/shaders/vertex2.glsl","/home/fernando/Projects/engine/shaders/fxaa.glsl");
   auto quadObj = std::make_shared<Mesh>(Mesh(quad,quadMat));
   scene2.add(quadObj);
   //add floor
   auto floorMat = std::make_shared<Material>(Material(Vec4(0.5,0.5,0.5,0.0)));
-  floorMat->setShaderFiles("/home/fernando/Projects/engine/vertex.glsl","/home/fernando/Projects/engine/fragment_floor.glsl");
+  floorMat->setShaderFiles("/home/fernando/Projects/engine/shaders/vertex.glsl","/home/fernando/Projects/engine/shaders/fragment_floor.glsl");
 
   auto floorQuad = std::make_shared<Mesh>(Mesh(quad,floorMat));
-  auto tex = std::make_shared<Texture>(Texture("/home/fernando/Projects/engine/sand.jpg"));
-  auto floorNormal = std::make_shared<Texture>(Texture("/home/fernando/Projects/engine/sand-normal.jpg"));
+  auto tex = std::make_shared<Texture>(Texture("/home/fernando/Projects/engine/textures/sand.jpg"));
+  auto floorNormal = std::make_shared<Texture>(Texture("/home/fernando/Projects/engine/textures/sand-normal.jpg"));
   floorNormal->setGamma(false);
   floorNormal->setNMipmaps(0);
   floorNormal->setFiltering(std::make_pair("nearest","nearest"));
