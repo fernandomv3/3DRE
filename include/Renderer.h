@@ -93,7 +93,8 @@ private:
     {"RGB8",GL_RGB8},
     {"RGBA8",GL_RGBA8},
     {"SRGB8",GL_SRGB8},
-    {"SRGBA8",GL_SRGB8_ALPHA8}
+    {"SRGBA8",GL_SRGB8_ALPHA8},
+    {"RGBA16F",GL_RGBA16F}
   };
   std::unordered_map<std::string, uint> GLFiltering{
     {"nearest",GL_NEAREST},
@@ -121,16 +122,16 @@ public:
   Vao& initGeometryBuffers(const Geometry& geom);
   Renderer& setUpVertexAttributes(GLProgram& prog,Vao& vao);
   GLProgram& initProgram(const Material& mat, const Geometry& geom);
-  std::unordered_map<std::string,int>& initTextures(const Material& mat);
+  std::unordered_map<std::string,int>& initTextures(const Material& mat,const Scene& scene);
   Renderer& initWriteFramebuffer();
   std::unordered_map<std::string,int>& initReadFramebuffer(const Material& mat);
-  std::unordered_map<std::string,int>& getUniformLocations(GLProgram& prog,Scene& scene,Camera& cam,Object3D& obj,Geometry& geom,Material& mat);
+  std::unordered_map<std::string,int>& getUniformLocations(std::string passName,GLProgram& prog,Scene& scene,Camera& cam,Object3D& obj,Geometry& geom,Material& mat);
   Renderer& setUpCameraUniforms(std::unordered_map<std::string,int>& uniforms,Camera& cam);
   Renderer& setUpObjectUniforms(std::unordered_map<std::string,int>& uniforms,Object3D& obj);
   Renderer& setUpMaterialUniforms(std::unordered_map<std::string,int>& uniforms,Material& mat);
   Renderer& setUpSceneUniforms(std::string passName,std::unordered_map<std::string,int>& uniforms,Scene& scene);
   Renderer& setUpGlobalUniforms(std::unordered_map<std::string,int>& uniforms);
-  Renderer& setUpTextureUniforms(std::unordered_map<std::string,int>& uniforms,Material& mat,std::unordered_map<std::string,int>& texUnits);
+  Renderer& setUpTextureUniforms(std::unordered_map<std::string,int>& uniforms,Material& mat,Scene& scene,std::unordered_map<std::string,int>& texUnits);
   Renderer& setUpReadFramebufferUniforms(std::unordered_map<std::string,int>& uniforms,std::unordered_map<std::string,int>& texUnits);
   Renderer& drawGeometry(const Geometry& geom, Vao& vao);
   uint makeTexture(const Texture& texture);

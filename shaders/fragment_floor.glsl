@@ -71,6 +71,6 @@ void main(){
 	vec4 diffuseColor = texture(colorMap,fUv);
 	float cosAng = calculateCosAngIncidence(normalize(light.position),normalize(normal),0.0);
 	float shadowFactor = calculateShadowFactor(fDepthMapPosition);
-	color = shadowFactor * light.color * diffuseColor *cosAng;
+	color = /*shadowFactor */ light.color * diffuseColor *cosAng;
 	//color = pow(color,vec4(1/gamma,1/gamma,1/gamma,1.0));
 }

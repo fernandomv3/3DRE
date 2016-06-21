@@ -6,9 +6,10 @@ Material::Material(const Vec4 diffuse, const Vec4 specular, float shininess){
   this->diffuseColor = diffuse;
   this->specularColor = specular;
   this->shininess = shininess;
-  this->colorMap = std::shared_ptr<Texture>();
-  this->normalMap = std::shared_ptr<Texture>();
-  this->specularMap = std::shared_ptr<Texture>();
+  this->colorMap = nullptr;
+  this->normalMap = nullptr;
+  this->specularMap = nullptr;
+  this->depthMap = nullptr;
 }
 
 Material& Material::setDiffuseColor(const Vec4 diffuseColor){
@@ -35,6 +36,10 @@ Material& Material::setSpecularMap(const std::shared_ptr<Texture> specularMap){
   this->specularMap = specularMap;
   return *this;
 }
+Material& Material::setDepthMap(const std::shared_ptr<Texture> depthMap){
+  this->depthMap = depthMap;
+  return *this;
+}
 Material& Material::setShaderFiles(const std::string vf, const std::string ff){
   this->vf = vf;
   this->ff = ff;
@@ -49,6 +54,7 @@ float Material::getShininess()const { return shininess; }
 std::shared_ptr<Texture> Material::getColorMap()const { return colorMap; }
 std::shared_ptr<Texture> Material::getNormalMap()const { return normalMap; }
 std::shared_ptr<Texture> Material::getSpecularMap()const { return specularMap; }
+std::shared_ptr<Texture> Material::getDepthMap()const { return depthMap; }
 
 std::vector< std::pair <std::string,std::string> > Material::getShaders() const{
   std::vector< std::pair <std::string,std::string> > vec;
@@ -71,6 +77,9 @@ std::unordered_map< std::string,std::shared_ptr<Texture> > Material::getTextures
   if(specularMap != nullptr){
     specularMap->loadFile();
     result["specularMap"] = specularMap;
+  }
+  if(depthMap != nullptr){
+    result["depthMap"] = depthMap;
   }
   return result;
 }

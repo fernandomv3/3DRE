@@ -61,11 +61,19 @@ GLProgram& Renderer::initProgram(const Material& mat, const Geometry& geom){
   return program;
 }
 
-std::unordered_map<std::string,int>& Renderer::initTextures(const Material& mat){
+std::unordered_map<std::string,int>& Renderer::initTextures(const Material& mat, const Scene& scene){
   auto &program = this->programs[mat.getUUID()];
   auto &texUnits = program.getTexUnits(); 
   auto tex = mat.getTextures("init");
+  auto scnTex = scene.getTextures("init");
   for(auto t : tex){
+    auto& texObj = this->textures[t.second->getUUID()];
+    if(t.second->getSourceFile() != "") t.second->loadFile();
+    if(texObj.texture == 0)texObj.texture = makeTexture(*(t.second));
+    if(texObj.sampler == 0)texObj.sampler = makeSampler(*(t.second));
+    if(texUnits.count(t.first) == 0)texUnits[t.first] = program.getFreeTextureUnit();
+  }
+  for(auto t : scnTex){
     auto& texObj = this->textures[t.second->getUUID()];
     if(t.second->getSourceFile() != "") t.second->loadFile();
     if(texObj.texture == 0)texObj.texture = makeTexture(*(t.second));
@@ -112,6 +120,10 @@ Renderer& Renderer::initWriteFramebuffer(){
 
     if(glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE){
       std::cout << "Framebuffer not created correctly" << std::endl;
+      GLenum err;
+      while ((err = glGetError()) != GL_NO_ERROR) {
+        std::cerr << "OpenGL error: " << err << std::endl;
+      }
       exit(0);
     }
     if(attachments.size() != 0){
@@ -149,7 +161,7 @@ Renderer& Renderer::setUpVertexAttributes(GLProgram& prog, Vao& vao){
   return *this;
 }
 
-std::unordered_map<std::string,int>& Renderer::getUniformLocations(GLProgram& prog,Scene& scene,Camera& cam,Object3D& obj,Geometry& geom,Material& mat){
+std::unordered_map<std::string,int>& Renderer::getUniformLocations(std::string passName,GLProgram& prog,Scene& scene,Camera& cam,Object3D& obj,Geometry& geom,Material& mat){
   int program = prog.getProgram();
   auto& uniforms = prog.getUniforms();
   if(uniforms.empty()){
@@ -213,9 +225,17 @@ Renderer& Renderer::setUpGlobalUniforms(std::unordered_map<std::string,int>& uni
   return *this;
 }
 
-Renderer& Renderer::setUpTextureUniforms(std::unordered_map<std::string,int>& uniforms,Material& mat,std::unordered_map<std::string,int>& texUnits){
+Renderer& Renderer::setUpTextureUniforms(std::unordered_map<std::string,int>& uniforms,Material& mat,Scene& scene,std::unordered_map<std::string,int>& texUnits){
   auto matTextures = mat.getTextures("forward");
+  auto scnTextures = scene.getTextures("forward");
   for(auto& texture : matTextures){
+    auto& texObj = textures[texture.second->getUUID()];
+    glActiveTexture(GL_TEXTURE0 + texUnits[texture.first]);
+    glBindTexture(GLTextureTarget[texture.second->getTarget()],texObj.texture);
+    glUniform1i(uniforms[texture.first],texUnits[texture.first]);
+    glBindSampler(texUnits[texture.first],texObj.sampler);
+  }
+  for(auto& texture : scnTextures){
     auto& texObj = textures[texture.second->getUUID()];
     glActiveTexture(GL_TEXTURE0 + texUnits[texture.first]);
     glBindTexture(GLTextureTarget[texture.second->getTarget()],texObj.texture);
@@ -273,10 +293,11 @@ Renderer& Renderer::render(Scene& scene, Camera& cam,std::string passName){
 
     auto& bufferObj =  initGeometryBuffers(*geom);
     auto& program = initProgram(*mat,*geom);
-    auto& texUnits = initTextures(*mat);
+    auto& texUnits = initTextures(*mat,scene);
 
     if(readFramebuffer)initReadFramebuffer(*mat);
-    auto& uniforms = getUniformLocations(program,scene,cam,*obj,*geom,*mat);
+
+    auto& uniforms = getUniformLocations(passName,program,scene,cam,*obj,*geom,*mat);
     glUseProgram(program.getProgram());
 
     glBindVertexArray(bufferObj.vao);
@@ -287,10 +308,42 @@ Renderer& Renderer::render(Scene& scene, Camera& cam,std::string passName){
 
     obj->updateModelMatrix();
     obj->updateNormalModelMatrix();
-    
     setUpObjectUniforms(uniforms,*obj);
     setUpMaterialUniforms(uniforms,*mat);
-    setUpTextureUniforms(uniforms,*mat, texUnits);
+    setUpTextureUniforms(uniforms,*mat,scene,texUnits);
+    if(readFramebuffer)setUpReadFramebufferUniforms(uniforms,texUnits);
+    setUpSceneUniforms(passName,uniforms,scene);
+    setUpGlobalUniforms(uniforms);
+
+    drawGeometry(*geom,bufferObj);
+
+    glBindVertexArray(0);
+  }
+  for(auto light : scene.getLights()){
+    auto geom = light->getGeometry();
+    if(geom == nullptr) continue;
+    auto mat = light->getMaterial();
+
+    auto& bufferObj =  initGeometryBuffers(*geom);
+    auto& program = initProgram(*mat,*geom);
+    auto& texUnits = initTextures(*mat,scene);
+    if(readFramebuffer)initReadFramebuffer(*mat);
+
+    auto& uniforms = getUniformLocations(passName,program,scene,cam,*light,*geom,*mat);
+    glUseProgram(program.getProgram());
+
+    glBindVertexArray(bufferObj.vao);
+
+    setUpVertexAttributes(program,bufferObj);
+
+    setUpCameraUniforms(uniforms,cam);
+
+    light->updateModelMatrix();
+    light->updateNormalModelMatrix();  
+    setUpObjectUniforms(uniforms,*light);
+
+    setUpMaterialUniforms(uniforms,*mat);
+    setUpTextureUniforms(uniforms,*mat,scene,texUnits);
     if(readFramebuffer)setUpReadFramebufferUniforms(uniforms,texUnits);
     setUpSceneUniforms(passName,uniforms,scene);
     setUpGlobalUniforms(uniforms);
@@ -338,7 +391,7 @@ uint Renderer::makeBuffer(GLenum target, const void* data, int size, GLenum usag
 uint Renderer::makeTexture(const Texture& texture){
   uint tex;
   uint target = this->GLTextureTarget[texture.getTarget()];
-  uint innerFormat = texture.getGamma() ? this->GLInnerFormat["S"+texture.getFormat()+"8"] : this->GLInnerFormat[texture.getFormat()];
+  uint innerFormat = texture.getGamma() ? this->GLInnerFormat["S"+texture.getFormat()+"8"] : this->GLInnerFormat[texture.getInnerFormat()];
   glGenTextures(1,(GLuint*)&tex);
   glBindTexture(target,tex);
   glTexImage2D(

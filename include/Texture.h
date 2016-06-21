@@ -37,6 +37,7 @@ public:
   std::string getTarget()const;
   bool getLoaded()const;
   std::string getFormat()const;
+  std::string getInnerFormat()const;
   std::type_index getType()const;
 
   Texture& setNMipmaps(int nMipmaps);
@@ -46,5 +47,7 @@ public:
   Texture& setTarget(std::string target);
   Texture& setLoaded(bool loaded);
   Texture& setFormat(std::string format);
+  Texture& setInnerFormat(std::string innerFormat);
+  Texture& setType(std::type_index type);
 };
 #endif

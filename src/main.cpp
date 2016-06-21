@@ -36,6 +36,7 @@ int main(int argc, char** argv){
   auto shadowFb = std::make_shared<Framebuffer>(Framebuffer(SCREEN_WIDTH,SCREEN_HEIGHT));
   auto depthMap = std::make_shared<Texture>(Texture(SCREEN_WIDTH,SCREEN_HEIGHT));
   depthMap->setFormat("depth");
+  depthMap->setInnerFormat("depth");
   shadowFb->addRenderTarget("depthMap",depthMap);
   auto depthMaterial = std::make_shared<Material>(Material());
   depthMaterial->setShaderFiles("/home/fernando/Projects/engine/shaders/vertex-transform.glsl","/home/fernando/Projects/engine/shaders/fragment-shadow.glsl");
@@ -44,24 +45,21 @@ int main(int argc, char** argv){
 
   auto gBuffer = std::make_shared<Framebuffer>(Framebuffer(SCREEN_WIDTH,SCREEN_HEIGHT));
   auto positionTarget = std::make_shared<Texture>(Texture(SCREEN_WIDTH,SCREEN_HEIGHT));
+  positionTarget->setType(std::type_index(typeid(float)));
+  positionTarget->setInnerFormat("RGBA16F");
   auto normalTarget = std::make_shared<Texture>(Texture(SCREEN_WIDTH,SCREEN_HEIGHT));
+  normalTarget->setType(std::type_index(typeid(float)));
+  normalTarget->setInnerFormat("RGBA16F");
   auto diffuseTarget = std::make_shared<Texture>(Texture(SCREEN_WIDTH,SCREEN_HEIGHT));
   auto specularTarget = std::make_shared<Texture>(Texture(SCREEN_WIDTH,SCREEN_HEIGHT));
   auto depthTarget = std::make_shared<Texture>(Texture(SCREEN_WIDTH,SCREEN_HEIGHT));
   depthTarget->setFormat("depth");
+  depthTarget->setInnerFormat("depth");
   gBuffer->addRenderTarget("position", positionTarget);
   gBuffer->addRenderTarget("normal", normalTarget);
   gBuffer->addRenderTarget("diffuse",diffuseTarget);
   gBuffer->addRenderTarget("specular",specularTarget);
   gBuffer->addRenderTarget("depth",depthTarget);
-
-  //create post-process framebuffer
-  /*auto writeFb = std::make_shared<Framebuffer>(Framebuffer(SCREEN_WIDTH,SCREEN_HEIGHT));
-  auto out1 = std::make_shared<Texture>(Texture(SCREEN_WIDTH,SCREEN_HEIGHT));
-  auto depth = std::make_shared<Texture>(Texture(SCREEN_WIDTH,SCREEN_HEIGHT));
-  depth->setFormat("depth");
-  writeFb->addRenderTarget("depth",depth);
-  writeFb->addRenderTarget("color",out1);*/
 
   //init cameras
   cam.perspectiveCamera(30.0,float(SCREEN_WIDTH)/float(SCREEN_HEIGHT),0.1,100.0);
@@ -87,15 +85,13 @@ int main(int argc, char** argv){
   phongMat->setSpecularMap(specTexture);
   scene.add(robot);
   robot->getRotation()[0] = 90;
-  robot->getRotation()[2] = 180;
+  robot->getRotation()[2] = 0;
 
   auto quad = std::make_shared<Geometry>(quadGeometry());//shared geometry
 
   auto quadMat = std::make_shared<Material>(Material(Vec4(0.5,0.5,0.5,0.0)));
   quadMat->setShaderFiles("/home/fernando/Projects/engine/shaders/vertex2.glsl","/home/fernando/Projects/engine/shaders/deferredLightning.glsl");
-  auto quadObj = std::make_shared<Mesh>(Mesh(quad,quadMat));
-  scene2.add(quadObj);
-  //add floor
+
   auto floorMat = std::make_shared<Material>(Material(Vec4(0.5,0.5,0.5,0.0)));
   floorMat->setShaderFiles("/home/fernando/Projects/engine/shaders/vertex_deferred.glsl","/home/fernando/Projects/engine/shaders/fragment_floor_deferred.glsl");
 
@@ -116,9 +112,12 @@ int main(int argc, char** argv){
 
   //add directional light
   auto dirlight = std::make_shared<Light>(Light(Vec4(0.8,0.8,0.8,1.0)));
+  dirlight->setMaterial(quadMat);
+  dirlight->setGeometry(quad);
   dirlight->setPosition(Vec4(6.0,7.0,7.5,0.0));
-  scene.add(dirlight);
-  
+  quadMat->setDepthMap(depthMap);
+  scene2.add(dirlight);
+
   bool quit = false;
   float currTime = SDL_GetTicks();
   glClearColor(1.0,1.0,1.0,1.0);
@@ -137,8 +136,8 @@ int main(int argc, char** argv){
 
     robot->setMaterial(depthMaterial);
     floorQuad->setMaterial(depthMaterial);
-    renderer.setWriteFramebuffer(shadowFb);
     renderer.setReadFramebuffer(nullptr);
+    renderer.setWriteFramebuffer(shadowFb);
     //glCullFace(GL_FRONT);
     renderer.render(scene,lightCam,"shadow");
     //glCullFace(GL_BACK);
@@ -146,15 +145,14 @@ int main(int argc, char** argv){
 
     robot->setMaterial(phongMat);
     floorQuad->setMaterial(floorMat);
-    renderer.setWriteFramebuffer(nullptr);
-    //renderer.setWriteFramebuffer(writeFb);
+
+    renderer.setReadFramebuffer(nullptr);
     renderer.setWriteFramebuffer(gBuffer);
-    renderer.setReadFramebuffer(shadowFb);
-    renderer.render(scene,cam,"forward");
+    renderer.render(scene,cam,"geometry");
     
-    renderer.setWriteFramebuffer(nullptr);
     renderer.setReadFramebuffer(gBuffer);
-    renderer.render(scene2,cam,"second");
+    renderer.setWriteFramebuffer(nullptr);
+    renderer.render(scene2,cam,"deferred");
     SDL_GL_SwapWindow(window);
   }
   cleanUp(window,context);

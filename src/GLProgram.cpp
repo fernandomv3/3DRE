@@ -11,7 +11,7 @@
 GLProgram::GLProgram(){
   this->program = 0;
   this->uniforms = std::unordered_map<std::string,int>();
-  for(int i = 8/*GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS*/ -1; i>=0; i--){
+  for(int i = 16/*GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS*/ -1; i>=0; i--){
     this->freeTexUnits.push(i);
   }
 }

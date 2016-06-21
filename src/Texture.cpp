@@ -56,7 +56,6 @@ Texture& Texture::loadFile(){
   char* data = new char[image->w * image->h * image->format->BytesPerPixel];
   memcpy(data,image->pixels,image->w * image->h * image->format->BytesPerPixel);
   this->image = std::unique_ptr<char[]>(data);
-  
   if(image){
     SDL_FreeSurface(image);
   }
@@ -69,6 +68,7 @@ std::pair<std::string,std::string> Texture::getFiltering()const { return filteri
 std::string Texture::getTarget()const { return target; }
 bool Texture::getLoaded()const { return loaded; }
 std::string Texture::getFormat()const { return format; }
+std::string Texture::getInnerFormat()const { return innerFormat; }
 std::type_index Texture::getType()const { return type; }
 
 Texture& Texture::setNMipmaps(int nMipmaps){
@@ -93,5 +93,13 @@ Texture& Texture::setLoaded(bool loaded){
 }
 Texture& Texture::setFormat(std::string format){
   this->format = format;
+  return *this;
+}
+Texture& Texture::setInnerFormat(std::string innerFormat){
+  this->innerFormat = innerFormat;
+  return *this;
+}
+Texture& Texture::setType(std::type_index type){
+  this->type = type;
   return *this;
 }

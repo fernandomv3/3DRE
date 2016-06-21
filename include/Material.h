@@ -19,6 +19,7 @@ private:
   std::shared_ptr<Texture> colorMap;
   std::shared_ptr<Texture> normalMap;
   std::shared_ptr<Texture> specularMap;
+  std::shared_ptr<Texture> depthMap;
   std::string vf;
   std::string ff;
 public:
@@ -30,6 +31,7 @@ public:
   Material& setColorMap(const std::shared_ptr<Texture> colorMap);
   Material& setNormalMap(const std::shared_ptr<Texture> normalMap);
   Material& setSpecularMap(const std::shared_ptr<Texture> specularMap);
+  Material& setDepthMap(const std::shared_ptr<Texture> depthMap);
   Material& setShaderFiles(const std::string vf, const std::string ff);
 
   std::string getUUID()const;
@@ -39,6 +41,7 @@ public:
   std::shared_ptr<Texture> getColorMap()const;
   std::shared_ptr<Texture> getNormalMap()const;
   std::shared_ptr<Texture> getSpecularMap()const;
+  std::shared_ptr<Texture> getDepthMap()const;
   virtual std::vector< std::pair<std::string,std::string> > getShaders() const;
   virtual std::unordered_map< std::string,std::shared_ptr<Texture> > getTextures(std::string passName) const;
   virtual std::vector< std::tuple<std::string,std::string,int,void*> >getUniforms(std::string passName);

@@ -7,12 +7,14 @@ class Camera : public Object3D{
 private:
   Mat4 projectionMatrix;
   Mat4 worldMatrix;
+  Mat4 inverseWorldMatrix;
   std::shared_ptr<Vec4> target;
   float gamma;
 public:
   Camera();
   Mat4 getProjectionMatrix()const;
   Mat4 getWorldMatrix()const;
+  Mat4 getInverseWorldMatrix()const;
   Camera& updateWorldMatrix();
   std::shared_ptr<Vec4> getTarget()const;
   Camera& setTarget(std::shared_ptr<Vec4> target);

@@ -67,7 +67,7 @@ Material.h: Vec4.h Texture.h
 
 Mesh.h: Object3D.h Geometry.h Material.h
 
-Light.h: Mesh.h
+Light.h: Mesh.h Texture.h
 
 Renderer.h: Scene.h Camera.h GLProgram.h
 

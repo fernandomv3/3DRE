@@ -5,6 +5,7 @@
 Scene::Scene(){
   uuid = generateUUID();
   ambientLight = Light(Vec4(0.2,0.2,0.2,1.0));
+  ssaoNoise = nullptr;
 }
 std::string Scene::getUUID()const { return uuid; }
 const std::vector< std::shared_ptr<Object3D> >& Scene::getObjects()const { return objects; }
@@ -46,36 +47,38 @@ Light& Scene::getAmbientLight(){ return ambientLight; }
 
 std::vector< std::tuple<std::string,std::string,int,void*> > Scene::getUniforms(std::string passName){
   std::vector< std::tuple<std::string,std::string,int,void*> > res;
-  int numLights = lights.size();
-  std::vector<float> c;
-  c.reserve(numLights*4);
-  std::vector<float> p;
-  p.reserve(numLights*4);
-  std::vector<float> m;
-  m.reserve(numLights*16);
-  std::vector<float> a;
-  a.reserve(numLights);
-  std::vector<float> i;
-  i.reserve(numLights);
+  if(passName == "forward"){
+    int numLights = lights.size();
+    std::vector<float> c;
+    c.reserve(numLights*4);
+    std::vector<float> p;
+    p.reserve(numLights*4);
+    std::vector<float> m;
+    m.reserve(numLights*16);
+    std::vector<float> a;
+    a.reserve(numLights);
+    std::vector<float> i;
+    i.reserve(numLights);
 
-  for(auto light : lights){
-    auto lightMatrixElements = light->getLightMatrix().getElements();
-    c.insert(std::end(c), light->getColor().getElements().begin(), light->getColor().getElements().end());
-    p.insert(std::end(p), light->getPosition().getElements().begin(), light->getPosition().getElements().end());
-    m.insert(std::end(m), lightMatrixElements.begin(),lightMatrixElements.end());
-    a.push_back(light->getAttenuation());
-    i.push_back(light->getIntensity());
+    for(auto light : lights){
+      auto lightMatrixElements = light->getLightMatrix().getElements();
+      c.insert(std::end(c), light->getColor().getElements().begin(), light->getColor().getElements().end());
+      p.insert(std::end(p), light->getPosition().getElements().begin(), light->getPosition().getElements().end());
+      m.insert(std::end(m), lightMatrixElements.begin(),lightMatrixElements.end());
+      a.push_back(light->getAttenuation());
+      i.push_back(light->getIntensity());
+    }
+    color.swap(c);
+    position.swap(p);
+    attenuation.swap(a);
+    intensity.swap(i);
+    matrices.swap(m);
+    if(!color.empty()) res.push_back(std::make_tuple("light.color","4fv",numLights,color.data()));
+    if(!position.empty())res.push_back(std::make_tuple("light.position","4fv",numLights,position.data()));
+    if(!attenuation.empty())res.push_back(std::make_tuple("light.attenuation","1f",numLights,attenuation.data()));
+    if(!intensity.empty())res.push_back(std::make_tuple("light.intensity","1f",numLights,intensity.data()));
+    if(!matrices.empty())res.push_back(std::make_tuple("light.depthMatrix","m4fv",numLights,matrices.data()));
   }
-  color.swap(c);
-  position.swap(p);
-  attenuation.swap(a);
-  intensity.swap(i);
-  matrices.swap(m);
-  if(!color.empty()) res.push_back(std::make_tuple("light.color","4fv",numLights,color.data()));
-  if(!position.empty())res.push_back(std::make_tuple("light.position","4fv",numLights,position.data()));
-  if(!attenuation.empty())res.push_back(std::make_tuple("light.attenuation","1f",numLights,attenuation.data()));
-  if(!intensity.empty())res.push_back(std::make_tuple("light.intensity","1f",numLights,intensity.data()));
-  if(!matrices.empty())res.push_back(std::make_tuple("light.depthMatrix","m4fv",numLights,matrices.data()));
   res.push_back(std::make_tuple("ambient","4f",1,static_cast<void*>(ambientLight.getColor().getElements().data())));
   
   int kernelSize = ssaoKernel.size();
@@ -98,6 +101,5 @@ std::unordered_map< std::string,std::shared_ptr<Texture> > Scene::getTextures(st
   if(ssaoNoise != nullptr){
     result["ssaoNoise"] = ssaoNoise;
   }
-
   return result;
 }
