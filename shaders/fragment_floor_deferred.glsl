@@ -11,12 +11,17 @@ layout(location = 3) out vec4 specular;
 
 uniform sampler2D normalMap;
 uniform sampler2D colorMap;
+uniform mat4 projectionMatrix;
 
 struct Material{
 	vec4 diffuse;
 	vec4 specular;
 	float shininess;
 };
+
+float linearizeDepth(in float depth, in mat4 projMatrix) {
+  return projMatrix[3][2] / (depth - projMatrix[2][2]);
+}
 
 vec4 calculateNormal(in vec4 vNormal,in vec4 vTangent, in vec2 uv ,in sampler2D normalMap){
   vec3 normal = normalize(vNormal).xyz;
