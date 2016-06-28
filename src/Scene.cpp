@@ -6,17 +6,23 @@ Scene::Scene(){
   uuid = generateUUID();
   ambientLight = Light(Vec4(0.2,0.2,0.2,1.0));
   ssaoNoise = nullptr;
+  ssaoRadius = 1.0;
 }
 std::string Scene::getUUID()const { return uuid; }
 const std::vector< std::shared_ptr<Object3D> >& Scene::getObjects()const { return objects; }
 const std::vector< std::shared_ptr<Light> >& Scene::getLights()const { return lights; }
 
+Scene& Scene::setSsaoRadius(float radius){
+  this->ssaoRadius = radius;
+  return *this;
+}
 Scene& Scene::setSsaoNoise(std::shared_ptr<Texture> ssaoNoise){
   this->ssaoNoise = ssaoNoise;
   return *this;
 }
 Scene& Scene::setSsaoKernel(std::vector<Vec4> ssaoKernel){
   this->ssaoKernel = ssaoKernel;
+  this->ssaoKernelSize = ssaoKernel.size();
   return *this;
 }
 
@@ -83,14 +89,19 @@ std::vector< std::tuple<std::string,std::string,int,void*> > Scene::getUniforms(
   
   int kernelSize = ssaoKernel.size();
   std::vector<float> k;
-  k.reserve(kernelSize *3);
+  k.reserve(kernelSize *4);
   for(auto v : ssaoKernel){
     k.push_back(v[0]);
     k.push_back(v[1]);
     k.push_back(v[2]);
+    k.push_back(v[3]);
   }
   flatSsaoKernel.swap(k);
-  if(!flatSsaoKernel.empty()) res.push_back(std::make_tuple("ssaoKernel","3fv",kernelSize,flatSsaoKernel.data()));
+  if(!flatSsaoKernel.empty()){
+    res.push_back(std::make_tuple("ssaoKernel","4fv",kernelSize,flatSsaoKernel.data()));
+    res.push_back(std::make_tuple("ssaoKernelSize","1i",1,&ssaoKernelSize));
+    res.push_back(std::make_tuple("ssaoRadius","1f",1,&ssaoRadius));
+  }
   
   return res;
 }
