@@ -26,8 +26,6 @@ void initializeContext(SDL_Window*& window,SDL_GLContext& context,int width,int 
     SDL_GL_SetAttribute( SDL_GL_CONTEXT_MAJOR_VERSION, 3 );
     SDL_GL_SetAttribute( SDL_GL_CONTEXT_MINOR_VERSION, 3 );
     SDL_GL_SetAttribute( SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE );
-    //SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
-    //SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 4);
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
     window = SDL_CreateWindow(
       "Engine",
@@ -68,12 +66,6 @@ void initializeContext(SDL_Window*& window,SDL_GLContext& context,int width,int 
         glEnable(GL_CULL_FACE);
         glCullFace(GL_BACK);
         glFrontFace(GL_CCW);
-        //glEnable(GL_MULTISAMPLE);
-        //glHint(GL_LINE_SMOOTH_HINT, GL_NICEST );
-        //glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST );
-        //glEnable(GL_LINE_SMOOTH);
-        //glEnable(GL_POLYGON_SMOOTH);
-        //glEnable( GL_PROGRAM_POINT_SIZE);
       }
     }
   }
