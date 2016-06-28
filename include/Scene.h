@@ -15,6 +15,8 @@ private:
   std::vector< std::shared_ptr<Light> > lights;
   std::vector<Vec4> ssaoKernel;
   std::shared_ptr<Texture> ssaoNoise;
+  int ssaoKernelSize;
+  float ssaoRadius;
   Light ambientLight;
 
   std::vector<float> color;
@@ -34,6 +36,7 @@ public:
   Scene& remove(std::shared_ptr<Object3D> object);
   Light& getAmbientLight();
 
+  Scene& setSsaoRadius(float radius);
   Scene& setSsaoNoise(std::shared_ptr<Texture> ssaoNoise);
   Scene& setSsaoKernel(std::vector<Vec4> ssaoKernel);
 
