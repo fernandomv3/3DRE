@@ -21,14 +21,14 @@ Camera& Camera::updateWorldMatrix(){
   }
   else{
     r = Mat4::lookAt(pos, *target,Vec4(0.0,1.0,0.0,0.0));
-    invR = r;
+    invR = transpose(r);
   }
   Mat4 s = Mat4::scale(1 / scale[0], 1 / scale[1], 1 / scale[2]);
   Mat4 invS = Mat4::scale(scale[0], scale[1], scale[2]);
   Mat4 res = Mat4::identity();
   Mat4 invRes = Mat4::identity();
   this->worldMatrix = cross(cross(cross(res,s),r),t);
-  this->inverseWorldMatrix = cross(cross(cross(invRes,invS),invR),invT);
+  this->inverseWorldMatrix = cross(cross(cross(invRes,invT),invR),invS);
   return *this;
 }
 std::shared_ptr<Vec4> Camera::getTarget()const{ return target; }
