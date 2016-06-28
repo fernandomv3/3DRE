@@ -13,6 +13,7 @@ uniform float time;
 uniform sampler2D depthMap;
 uniform vec4 ambient;
 uniform mat4 inverseWorldMatrix;
+uniform mat4 worldMatrix;
 
 struct Light{
     vec4 color;
@@ -49,7 +50,7 @@ float calculateShadowFactor(in vec4 lightSpacePos){
   vec3 uv = 0.5 * projCoords + 0.5;
   if(uv.x > 1.0 || uv.y > 1.0 || uv.x < 0.0 || uv.y < 0.0) return 1.0;
   float depth = texture(depthMap,uv.xy).x;
-  if (depth < uv.z + 0.00001){
+  if (depth < uv.z - 0.00001){
     return 0.4;
   }
   return 1.0;
@@ -68,9 +69,8 @@ void main(){
     specular.w = 0.0;
     vec4 viewDirection = normalize(-worldPosition);
     float cosAng;
-    float blinnPhongTerm = calculateBlinnPhongTerm(normalize(light.position),normal,viewDirection,20,cosAng);
+    float blinnPhongTerm = calculateBlinnPhongTerm(normalize(light.position),normal,viewDirection,shininess,cosAng);
     color = shadowFactor * light.color * diffuse *cosAng;
     color += shadowFactor *  light.color * specular * blinnPhongTerm;
     color = pow(color,vec4(1/gamma,1/gamma,1/gamma,1.0));
-    vec4 lightSpacePos = light.depthMatrix * inverseWorldMatrix * worldPosition;
 }
