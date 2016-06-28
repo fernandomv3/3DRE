@@ -28,6 +28,7 @@ public:
   const std::string& getSourceFile()const;
   const char* getImage()const;
   Texture& loadFile();
+  Texture& loadData(void* data, int w, int h);
   int getHeight()const;
   int getWidth()const;
   bool getGamma()const;

@@ -62,6 +62,15 @@ Texture& Texture::loadFile(){
   this->loaded = true;
   return *this;
 }
+Texture& Texture::loadData(void* data, int w, int h){
+  this->width = w;
+  this->height = h;
+  void* d = new float[w*h*4];
+  memcpy(d,data,w*h*4*sizeof(float));
+  this-> image = std::unique_ptr<char[]>(static_cast<char*>(d));
+  this->loaded = true;
+  return *this;
+}
 int Texture::getNMipmaps()const { return nMipmaps; }
 std::tuple<std::string,std::string,std::string> Texture::getWrapping()const { return wrapping; }
 std::pair<std::string,std::string> Texture::getFiltering()const { return filtering; }
