@@ -171,12 +171,14 @@ std::unordered_map<std::string,int>& Renderer::getUniformLocations(std::string p
     auto globalUniformData = this->getUniforms("location");
     auto sceneUniformData = scene.getUniforms("location");
     auto tex = mat.getTextures("location");
+    auto scnTex = scene.getTextures("location");
     for(auto u : camUniformData) uniforms[std::get<0>(u)] = glGetUniformLocation(program,std::get<0>(u).c_str());
     for(auto u : objUniformData) uniforms[std::get<0>(u)] = glGetUniformLocation(program,std::get<0>(u).c_str());
     for(auto u : matUniformData) uniforms[std::get<0>(u)] = glGetUniformLocation(program,std::get<0>(u).c_str());
     for(auto u : globalUniformData) uniforms[std::get<0>(u)] = glGetUniformLocation(program,std::get<0>(u).c_str());
     for(auto u : sceneUniformData) uniforms[std::get<0>(u)] = glGetUniformLocation(program,std::get<0>(u).c_str());
     for(auto t : tex) uniforms[t.first] = glGetUniformLocation(program,t.first.c_str());
+    for(auto t : scnTex) uniforms[t.first] = glGetUniformLocation(program,t.first.c_str());
     if(readFramebuffer){
       auto& renderTargets = readFramebuffer->getRenderTargets("location");
       for(auto t : renderTargets) uniforms[t.first] = glGetUniformLocation(program,("fb"+t.first).c_str());
