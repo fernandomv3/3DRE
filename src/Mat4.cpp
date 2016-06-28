@@ -102,8 +102,9 @@ Mat4 Mat4::orthographic(float left,float right,float top,float bottom,float near
 }
 Mat4 Mat4::lookAt(const Vec4& eye, const Vec4& target,const Vec4& up){
   Vec4 z = unitVector(eye - target);
-  Vec4 x = unitVector(cross(z,up));
-  Vec4 y = cross(x,z);
+  if(!z.length()) z[2] = 1.0;
+  Vec4 x = unitVector(cross(up,z));
+  Vec4 y = cross(z,x);
 
   Mat4 res = Mat4::identity();
   res[0] = x[0];
