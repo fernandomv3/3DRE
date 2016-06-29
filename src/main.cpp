@@ -144,7 +144,9 @@ int main(int argc, char** argv){
 
   auto floorQuad = std::make_shared<Mesh>(Mesh(quad,floorMat));
   auto tex = std::make_shared<Texture>(Texture("/home/fernando/Projects/engine/textures/sand.jpg"));
+  tex->setWrapping(std::make_tuple("repeat","repeat",""));
   auto floorNormal = std::make_shared<Texture>(Texture("/home/fernando/Projects/engine/textures/sand-normal.jpg"));
+  floorNormal->setWrapping(std::make_tuple("repeat","repeat",""));
   floorNormal->setGamma(false);
   floorNormal->setNMipmaps(0);
   floorNormal->setFiltering(std::make_pair("nearest","nearest"));
