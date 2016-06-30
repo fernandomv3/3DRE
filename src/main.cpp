@@ -125,6 +125,20 @@ int main(int argc, char** argv){
   gBuffer->addRenderTarget("specular",specularTarget);
   gBuffer->addRenderTarget("depth",depthTarget);
 
+  //create ssaoBuffer
+  auto ssaoBuffer = std::make_shared<Framebuffer>(Framebuffer(SCREEN_WIDTH,SCREEN_HEIGHT));
+  auto ssaoTarget = std::make_shared<Texture>(Texture(SCREEN_WIDTH,SCREEN_HEIGHT));
+  ssaoTarget->setType(std::type_index(typeid(float)));
+  ssaoTarget->setInnerFormat("RGBA16F");
+  ssaoBuffer->addRenderTarget("occlusion",ssaoTarget);
+
+  //create blurFB
+  auto blurBuffer = std::make_shared<Framebuffer>(Framebuffer(SCREEN_WIDTH,SCREEN_HEIGHT));
+  auto blurTarget = std::make_shared<Texture>(Texture(SCREEN_WIDTH,SCREEN_HEIGHT));
+  blurTarget->setType(std::type_index(typeid(float)));
+  blurTarget->setInnerFormat("RGBA16F");
+  blurBuffer->addRenderTarget("ssao",blurTarget);
+
   //init cameras
   cam.perspectiveCamera(30.0,float(SCREEN_WIDTH)/float(SCREEN_HEIGHT),0.1,100.0);
   cam.getPosition()[2] = 10;
@@ -138,6 +152,10 @@ int main(int argc, char** argv){
 
   auto quadMat = std::make_shared<Material>(Material(Vec4(0.5,0.5,0.5,0.0)));
   quadMat->setShaderFiles("/home/fernando/Projects/engine/shaders/vertex2.glsl","/home/fernando/Projects/engine/shaders/deferredLightning.glsl");
+  auto ssaoMat = std::make_shared<Material>(Material(Vec4(0.5,0.5,0.5,0.0)));
+  ssaoMat->setShaderFiles("/home/fernando/Projects/engine/shaders/vertex2.glsl","/home/fernando/Projects/engine/shaders/occlusionPass.glsl");
+  auto blurMat = std::make_shared<Material>(Material(Vec4(0.5,0.5,0.5,0.0)));
+  blurMat->setShaderFiles("/home/fernando/Projects/engine/shaders/vertex2.glsl","/home/fernando/Projects/engine/shaders/blur.glsl");
 
   auto floorMat = std::make_shared<Material>(Material(Vec4(0.5,0.5,0.5,0.0)));
   floorMat->setShaderFiles("/home/fernando/Projects/engine/shaders/vertex_deferred.glsl","/home/fernando/Projects/engine/shaders/fragment_floor_deferred.glsl");
@@ -160,7 +178,7 @@ int main(int argc, char** argv){
 
   //add spheres
   auto geometry = std::make_shared<Geometry>(loadDataFromFile("/home/fernando/Projects/engine/models/icosphere.dae"));
-  auto phongMat = std::make_shared<Material>(Material(Vec4(0.5,0.5,1.0,0.0),Vec4(0.0,0.0,0.0,0.0),20));
+  auto phongMat = std::make_shared<Material>(Material(Vec4(0.3,0.3,0.3,0.0),Vec4(0.0,0.0,0.0,0.0),20));
   phongMat->setShaderFiles("/home/fernando/Projects/engine/shaders/vertex_deferred.glsl","/home/fernando/Projects/engine/shaders/fragment_sphere_deferred.glsl");
   std::vector<std::shared_ptr<Mesh>> sphereArray;
   for(int i = 0; i < 5;i++){
@@ -189,7 +207,6 @@ int main(int argc, char** argv){
   bool quit = false;
   float currTime = SDL_GetTicks();
   glClearColor(0.0,0.0,0.0,0.0);
-
   while(!quit){
     float newTime = SDL_GetTicks();
     float dt = (newTime - currTime)*0.001;
@@ -216,9 +233,22 @@ int main(int argc, char** argv){
     renderer.setWriteFramebuffer(gBuffer);
     renderer.render(scene,cam,"geometry");
 
+    dirlight->setMaterial(ssaoMat);
+    renderer.setReadFramebuffer(gBuffer);
+    renderer.setWriteFramebuffer(ssaoBuffer);
+    renderer.render(scene2,cam,"ssao");
+
+    dirlight->setMaterial(blurMat);
+    renderer.setReadFramebuffer(ssaoBuffer);
+    renderer.setWriteFramebuffer(blurBuffer);
+    renderer.render(scene2,cam,"blur");
+
+    dirlight->setMaterial(quadMat);
+    gBuffer->addRenderTarget("ssao",blurTarget);
     renderer.setReadFramebuffer(gBuffer);
     renderer.setWriteFramebuffer(nullptr);
     renderer.render(scene2,cam,"deferred");
+    gBuffer->removeTarget("ssao");
     SDL_GL_SwapWindow(window);
   }
   cleanUp(window,context);

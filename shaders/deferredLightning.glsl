@@ -14,6 +14,7 @@ uniform sampler2D depthMap;
 uniform vec4 ambient;
 uniform mat4 inverseWorldMatrix;
 uniform mat4 worldMatrix;
+uniform sampler2D fbssao;
 
 struct Light{
     vec4 color;
@@ -69,8 +70,9 @@ void main(){
     specular.w = 0.0;
     vec4 viewDirection = normalize(-worldPosition);
     float cosAng;
-    float blinnPhongTerm = calculateBlinnPhongTerm(normalize(light.position),normal,viewDirection,shininess,cosAng);
+    float blinnPhongTerm = calculateBlinnPhongTerm(normalize(light.position),normal,viewDirection,20,cosAng);
     color = shadowFactor * light.color * diffuse *cosAng;
     color += shadowFactor *  light.color * specular * blinnPhongTerm;
+    color =  diffuse*texture(fbssao,fUv);
     color = pow(color,vec4(1/gamma,1/gamma,1/gamma,1.0));
 }

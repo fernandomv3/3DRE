@@ -1,7 +1,7 @@
 #version 330
 
 in vec2 fUv;
-layout(location = 0)out float ao;
+layout(location = 0)out vec4 ao;
 uniform sampler2D fbposition;
 uniform sampler2D fbnormal;
 uniform int screenWidth;
@@ -13,12 +13,15 @@ uniform vec4 ssaoKernel[128];
 uniform int ssaoKernelSize;
 uniform float ssaoRadius;
 uniform sampler2D ssaoNoise;
+uniform float gamma;
+
 
 void main(){
   vec3 origin = texture(fbposition,fUv).xyz;
   vec3 normal = normalize(texture(fbnormal,fUv)).xyz;
-
   vec2 noiseScale = vec2(screenWidth,screenHeight)/vec2(4.0);
+  float depth = texture(fbdepth,fUv).x;
+
   vec3 rvec = texture(ssaoNoise, fUv * noiseScale).xyz;
   vec3 tangent = normalize(rvec - normal * dot(rvec, normal));
   vec3 bitangent = cross(normal, tangent);
@@ -31,13 +34,13 @@ void main(){
 
     vec4 offset = vec4(sample, 1.0);
     offset = projectionMatrix * offset;
-    offset.xyz /= offset.w;
-    offset.xyz = offset.xyz * 0.5 + 0.5;
+    offset.xy /= offset.w;
+    offset.xy = offset.xy * 0.5 + 0.5;
     
-    float sampleDepth = -texture(fbposition, offset.xy).w;
+    float sampleDepth = texture(fbposition, offset.xy).z;
     float rangeCheck= smoothstep(0.0,1.0,ssaoRadius / abs(origin.z - sampleDepth));
-    occlusion += (sampleDepth >= sample.z ? 1.0 : 0.0) * rangeCheck;
+    occlusion += rangeCheck * step(sample.z,sampleDepth);
   }
-  occlusion = 1.0 - (occlusion / ssaoKernelSize);
-  ao= occlusion;
+  occlusion = 1-(occlusion / float(ssaoKernelSize));
+  ao= vec4(pow(occlusion,4.0));
 }
