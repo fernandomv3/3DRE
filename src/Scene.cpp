@@ -4,7 +4,7 @@
 
 Scene::Scene(){
   uuid = generateUUID();
-  ambientLight = Light(Vec4(0.2,0.2,0.2,1.0));
+  ambientLight = Light(Vec4(0.01,0.01,0.01,1.0));
   ssaoNoise = nullptr;
   ssaoRadius = 1.0;
 }

@@ -2,6 +2,8 @@
 #include "MathUtils.h"
 #include "GL/glew.h"
 
+#include <algorithm>
+
 Framebuffer::Framebuffer(int width, int height){
   uuid = generateUUID();
   this->width = width;
@@ -27,6 +29,8 @@ std::vector<std::string> Framebuffer::getTargetsOrder() const{
 }
 
 Framebuffer& Framebuffer::removeTarget(std::string name){
+  renderTargets.erase(name);
+  insertOrder.erase(std::remove(insertOrder.begin(), insertOrder.end(), name), insertOrder.end());
   return *this;
 }
 
