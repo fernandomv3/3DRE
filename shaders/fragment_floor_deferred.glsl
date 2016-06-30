@@ -39,9 +39,10 @@ uniform Material material;
 
 void main(){
 	position = fWorldPosition;
-	normal = calculateNormal(fNormal,fTangent,fUv*scale,normalMap);
-  normal = 2.0* texture(normalMap,fUv *scale)  - vec4(1.0);
-	diffuse = texture(colorMap,fUv*scale);
+	//normal = calculateNormal(fNormal,fTangent,fUv*scale,normalMap);
+  //normal = 2.0* texture(normalMap,fUv *scale)  - vec4(1.0);
+	normal = fNormal;
+  diffuse = texture(colorMap,fUv*scale);
 	specular = material.specular;
 	specular.w = material.shininess;
 }
